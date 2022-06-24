@@ -36,9 +36,10 @@ Route::group(['prefix'=>'subjects', 'as' => 'subject.'], function (){
 Route::group(['prefix'=>'classes', 'as' => 'class.'], function (){
     Route::get('/', [\App\Http\Controllers\ClassesController::class,'index'])->name('index');
     Route::get('api', [\App\Http\Controllers\ClassesController::class,'api'])->name('api');
-    Route::get('edit/{subject}', [\App\Http\Controllers\ClassesController::class,'edit'])->name('edit');
-    Route::put('update/{subject}', [\App\Http\Controllers\ClassesController::class,'update'])->name('update');
-    Route::delete('/destroy/{subject}', [\App\Http\Controllers\ClassesController::class,'destroy'])->name('destroy');
-    // Route::post('/create', [\App\Http\Controllers\ClassesController::class,'store'])->name('store');
+    Route::get('userApi', [\App\Http\Controllers\ClassesController::class,'userApi'])->name('userApi');
+    Route::get('edit/{classes}', [\App\Http\Controllers\ClassesController::class,'edit'])->name('edit');
+    Route::put('update', [\App\Http\Controllers\ClassesController::class,'update'])->name('update');
+    Route::delete('/destroy/{classes}', [\App\Http\Controllers\ClassesController::class,'destroy'])->name('destroy');
+    Route::post('/create', [\App\Http\Controllers\ClassesController::class,'store'])->name('store');
 });
 

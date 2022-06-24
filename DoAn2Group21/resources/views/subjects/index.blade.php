@@ -1,4 +1,7 @@
 @extends('layout.master')
+@push('title')
+<title>Subjects</title>
+@endpush
 @push('css')
     {{-- css start --}}
     <link href="{{ asset('vendors/simple-datatables/style.css') }}" rel="stylesheet" type="text/css" />

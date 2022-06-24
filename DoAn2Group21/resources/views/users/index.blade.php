@@ -1,4 +1,7 @@
 @extends('layout.master')
+@push('title')
+<title>User</title>
+@endpush
 @push('css')
     {{-- css start --}}
     <link href="{{ asset('css/pages/calendar.css') }}" rel="stylesheet" type="text/css" />

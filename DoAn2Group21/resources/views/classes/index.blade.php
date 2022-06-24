@@ -1,4 +1,7 @@
 @extends('layout.master')
+@push('title')
+<title>Classes</title>
+@endpush
 @push('css')
     {{-- css start --}}
     <link href="{{ asset('vendors/simple-datatables/style.css') }}" rel="stylesheet" type="text/css" />
@@ -54,7 +57,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form class="form form-vertical" action="{{ Route('subject.store') }}" method="post">
+                    <form class="form form-vertical" action="{{ Route('class.store') }}" method="POST">
                         @csrf
                         <div class="form-body">
                             <div class="row">
@@ -74,7 +77,7 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="weekday">Buổi học</label>
-                                        <select id="weekday" name="weekday" class="choices form-select multiple-remove" multiple="multiple">
+                                        <select id="weekday" name="weekday[]" class="choices form-select multiple-remove" multiple="multiple">
                                             <option value="1">Thứ 2</option>
                                             <option value="2">Thứ 3</option>
                                             <option value="3">Thứ 4</option>
