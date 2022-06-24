@@ -1,0 +1,16 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class ClassWeekday extends Model
+{
+    use HasFactory;
+
+    public function WeekDays()
+    {
+        $this->belongsTo(WeekDays::class, 'weekday_id', 'id');
+    }
+}
