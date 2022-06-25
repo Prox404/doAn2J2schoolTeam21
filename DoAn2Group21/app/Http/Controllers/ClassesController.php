@@ -62,6 +62,7 @@ class ClassesController extends Controller
 
     public function edit(Classes $class)
     {
+        // dd($class);
         $subject = new Subjects();
         $subject_data = $subject::query()->get([
             'id',
@@ -72,19 +73,20 @@ class ClassesController extends Controller
             ->addSelect('class_weekdays.weekday_id, class_weekdays.shift')
             ->where('class_id', $class->id);
 
-        return view('classes.edit')
-        ->with('class', $class)
-        ->with('subject', $subject_data)
-        ->with('weekdays', $weekdays);
+        return view('classes.edit',[
+            'class' => $class,
+            'subject' => $subject_data,
+            'weekdays' => $weekdays,
+        ]);
     }
 
     public function userApi(Classes $class)
     {
         $query = ClassStudent::query()
-            ->select('class_student.*')
+            ->select('class_students.*')
             ->addSelect('users.name as username')
             ->where('class_id', $class->id)
-            ->leftJoin('users', 'users.user_id', 'user_id');
+            ->leftJoin('users', 'users.id', 'user_id');
         return DataTables::of($query)
             ->addColumn('edit', function ($object) {
                 return route('user.edit', $object);

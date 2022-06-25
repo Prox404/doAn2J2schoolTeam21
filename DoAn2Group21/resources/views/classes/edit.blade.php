@@ -23,6 +23,8 @@
                     <h4 class="card-title">Sửa lý thông tin lớp</h4>
                 </div>
                 <div class="card-body">
+                    {{$class}}
+                    {{$subject}}
                     <div class="col-12 d-flex justify-content-start mb-3">
                         <form class="form form-vertical" action="{{ Route('class.update', $class) }}" method="POST">
                             @csrf
