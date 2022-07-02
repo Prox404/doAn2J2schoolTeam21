@@ -35,6 +35,7 @@
                                 <th>Subject Name</th>
                                 <th>Edit</th>
                                 <th>Destroy</th>
+                                <th>Auto Schedule</th>
                             </tr>
                         </thead>
 
@@ -152,6 +153,17 @@
                             @method('DELETE')
                             <button type='submit' class="btn-delete btn btn-danger">Delete</button>
                         </form>`;
+                        }
+                    },
+                    {
+                        data: 'autoSchedule',
+                        targets: 4,
+                        orderable: false,
+                        searchable: false,
+                        render: function(data, type, row, meta) {
+                            return `<a class="btn btn-success" href="${data}" >
+                                Auto Schedule
+                            </a>`;
                         }
                     }
                 ]

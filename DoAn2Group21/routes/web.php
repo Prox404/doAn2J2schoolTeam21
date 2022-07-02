@@ -52,6 +52,7 @@ Route::group(['prefix'=>'classes', 'as' => 'class.'], function (){
     Route::get('api', [\App\Http\Controllers\ClassesController::class,'api'])->name('api');
     Route::get('userApi/{id}', [\App\Http\Controllers\ClassesController::class,'userApi'])->name('userApi');
     Route::get('edit/{classes}', [\App\Http\Controllers\ClassesController::class,'edit'])->name('edit');
+    Route::get('autoSchedule/{id}', [\App\Http\Controllers\ClassesController::class,'autoSchedule'])->name('autoSchedule');
     Route::put('update', [\App\Http\Controllers\ClassesController::class,'update'])->name('update');
     Route::delete('/destroy/{classes}', [\App\Http\Controllers\ClassesController::class,'destroy'])->name('destroy');
     Route::post('/create', [\App\Http\Controllers\ClassesController::class,'store'])->name('store');

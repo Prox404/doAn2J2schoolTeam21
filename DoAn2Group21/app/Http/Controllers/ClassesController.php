@@ -51,6 +51,9 @@ class ClassesController extends Controller
             ->addColumn('destroy', function ($object) {
                 return route('class.destroy', $object);
             })
+            ->addColumn('autoSchedule', function ($object) {
+                return route('class.autoSchedule', $object);
+            })
             ->make(true);
     }
 
@@ -138,7 +141,7 @@ class ClassesController extends Controller
         return redirect()->route('subject.index')->with('message', 'Success add ' . $name . ' !!!');
     }
 
-    private function getAllDaysInAMonth($year, $month, $day, $daysError = 30)
+    function getAllDaysInAMonth($year, $month, $day, $daysError = 30)
     {
         $dateString = 'first ' . $day . ' of ' . $year . '-' . $month;
 
@@ -164,48 +167,60 @@ class ClassesController extends Controller
 
     public function autoSchedule($id)
     {
-        $class = Classes::find($id);
+        $class = Classes::query()
+            ->addSelect('classes.*')
+            ->addSelect('subjects.name as subject_name','subjects.end_date','subjects.start_date')
+            ->leftJoin('subjects', 'classes.subject_id', 'subjects.id')
+            ->where('classes.id', '=', $id)
+            ->first();
 
-        $weekdays = $class->weekdays;
-        $start_date = new Date($class->start_date);
-        $end_date = new Date($class->end_date);
+        // $class = $class->toArray();
+         
+        $weekdays = ClassWeekday::query()
+            ->addSelect('class_weekdays.weekday_id as weekdays')
+            ->where('class_id', '=', $id)
+            ->get();
+        $weekdays = $weekdays->pluck('weekdays')->toArray();
 
-        $start_month = Carbon::createFromDate('Y-m-d', $start_date)->format('m');
-        $end_month = Carbon::createFromDate('Y-m-d', $end_date)->format('m');
-        $start_year = Carbon::createFromDate('Y-m-d', $start_date)->format('Y');
-        $end_year = Carbon::createFromDate('Y-m-d', $end_date)->format('Y');
+        $start_date = new Carbon($class->start_date);
+        $end_date = new Carbon($class->end_date);
+
+        $start_month = $start_date->format('m');
+        $end_month = $end_date->format('m');
+        $start_year = $start_date->format('Y');
+        $end_year = $end_date->format('Y');
 
         $days = [];
         for ($i = $start_month; $i <= $end_month; $i++) {
             foreach ($weekdays as $weekday) {
                 switch ($weekday) {
                     case 1:
-                        $day = config('constant.weekdays.MONDAY');
+                        $day = 'Monday';
                         break;
                     case 2:
-                        $day = config('constant.weekdays.TUESDAY');
+                        $day = 'Tuesday';
                         break;
                     case 3:
-                        $day = config('constant.weekdays.WEDNESDAY');
+                        $day = 'Wednesday';
                         break;
                     case 4:
-                        $day = config('constant.weekdays.THURSDAY');
+                        $day = 'Thursday';
                         break;
                     case 5:
-                        $day = config('constant.weekdays.FRIDAY');
+                        $day = 'Friday';
                         break;
                     case 6:
-                        $day = config('constant.weekdays.SATURDAY');
+                        $day = 'Saturday';
                         break;
                     case 7:
-                        $day = config('constant.weekdays.SUNDAY');
+                        $day = 'Sunday';
                         break;
                     default:
                         $day = null;
                         break;
                 }
 
-                $day = getAllDaysInAMonth($start_year, $i, $day);
+                $days = $this->getAllDaysInAMonth($start_year, $i, $day);
 
                 foreach ($days as $day) {
                     $schedule = new Schedules();
@@ -216,5 +231,7 @@ class ClassesController extends Controller
                 }
             }
         }
+
+        return redirect()->route('classes.index')->with('message', 'Success create auto schedule !!!');
     }
 }

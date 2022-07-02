@@ -14,4 +14,6 @@ class Schedules extends Model
         'date',
         'subject_id',
     ];
+
+    public $timestamps = false;
 }
