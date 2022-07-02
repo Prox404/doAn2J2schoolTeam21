@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Classes;
 use App\Models\ClassStudent;
 use App\Models\ClassWeekday;
+use App\Models\Schedules;
 use App\Models\Subjects;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\View as View;
 use Illuminate\Support\Facades\Route;
 use Yajra\DataTables\DataTables;
+use Illuminate\Support\Carbon;
 
 class ClassesController extends Controller
 {
@@ -30,7 +33,7 @@ class ClassesController extends Controller
             'name',
         ]);
         return view('classes.index', [
-            'subject'=> $subject_data,
+            'subject' => $subject_data,
         ]);
     }
 
@@ -40,18 +43,18 @@ class ClassesController extends Controller
             ->addSelect('classes.*')
             ->addSelect('subjects.name as subject_name')
             ->leftJoin('subjects', 'classes.subject_id', 'subjects.id');
-        
+
         return DataTables::of($query)
-        ->addColumn('edit', function ($object) {
-            return route('class.edit', $object);
-        })
-        ->addColumn('destroy', function ($object) {
-            return route('class.destroy', $object);
-        })
-        ->make(true);
+            ->addColumn('edit', function ($object) {
+                return route('class.edit', $object);
+            })
+            ->addColumn('destroy', function ($object) {
+                return route('class.destroy', $object);
+            })
+            ->make(true);
     }
 
-    public function update( Classes $class)
+    public function update(Classes $class)
     {
         // UpdateRequest $request,
         // $class->fill($request->validated());
@@ -60,9 +63,10 @@ class ClassesController extends Controller
         // return redirect()->route('classes.index')->with('message', 'Success!!!');
     }
 
-    public function edit(Classes $class)
+    public function edit($id)
     {
-        // dd($class);
+        $class = Classes::find($id);
+
         $subject = new Subjects();
         $subject_data = $subject::query()->get([
             'id',
@@ -70,35 +74,35 @@ class ClassesController extends Controller
         ]);
 
         $weekdays = ClassWeekday::query()
-            ->addSelect('class_weekdays.weekday_id, class_weekdays.shift')
-            ->where('class_id', $class->id);
+            ->addSelect('class_weekdays.*')
+            ->where('class_id', '=', $id);
 
-        return view('classes.edit',[
+        return view('classes.edit', [
             'class' => $class,
             'subject' => $subject_data,
             'weekdays' => $weekdays,
         ]);
     }
 
-    public function userApi(Classes $class)
+    public function userApi($id)
     {
         $query = ClassStudent::query()
-            ->select('class_students.*')
-            ->addSelect('users.name as username')
-            ->where('class_id', $class->id)
-            ->leftJoin('users', 'users.id', 'user_id');
+            ->select('class_students.class_id')
+            ->addSelect('users.id', 'users.name')
+            ->leftJoin('users', 'users.id', 'user_id')
+            ->where('class_id', '=', $id);
         return DataTables::of($query)
             ->addColumn('edit', function ($object) {
                 return route('user.edit', $object);
             })
             ->addColumn('destroy', function ($object) {
-                return route('user.destroy', $object);
+                return route('classStudent.destroy', $object);
             })
             ->make(true);
     }
 
     public function destroy(Classes $class)
-    {   
+    {
         // $class->delete();
         // return redirect()->route('subject.index')->with('message', 'Success delete ' . $class->name .' !!!');
     }
@@ -122,7 +126,7 @@ class ClassesController extends Controller
         $class->save();
         $insertedId = $class->id;
 
-        for ($i=0; $i < $number_weekday; $i++) {
+        for ($i = 0; $i < $number_weekday; $i++) {
             $class_weekday = new ClassWeekday();
             $class_weekday->class_id = $insertedId;
             $class_weekday->shift = $shift;
@@ -131,6 +135,86 @@ class ClassesController extends Controller
         }
 
         // return $insertedId;
-        return redirect()->route('subject.index')->with('message', 'Success add ' . $name .' !!!');
+        return redirect()->route('subject.index')->with('message', 'Success add ' . $name . ' !!!');
+    }
+
+    private function getAllDaysInAMonth($year, $month, $day, $daysError = 30)
+    {
+        $dateString = 'first ' . $day . ' of ' . $year . '-' . $month;
+
+        if (!strtotime($dateString)) {
+            throw new \Exception('"' . $dateString . '" is not a valid strtotime');
+        }
+
+        $startDay = new \DateTime($dateString);
+
+        if ($startDay->format('j') > $daysError) {
+            $startDay->modify('- 7 days');
+        }
+
+        $days = [];
+
+        while ($startDay->format('Y-m') <= $year . '-' . str_pad($month, 2, 0, STR_PAD_LEFT)) {
+            $days[] = clone $startDay;
+            $startDay->modify('+ 7 days');
+        }
+
+        return $days;
+    }
+
+    public function autoSchedule($id)
+    {
+        $class = Classes::find($id);
+
+        $weekdays = $class->weekdays;
+        $start_date = new Date($class->start_date);
+        $end_date = new Date($class->end_date);
+
+        $start_month = Carbon::createFromDate('Y-m-d', $start_date)->format('m');
+        $end_month = Carbon::createFromDate('Y-m-d', $end_date)->format('m');
+        $start_year = Carbon::createFromDate('Y-m-d', $start_date)->format('Y');
+        $end_year = Carbon::createFromDate('Y-m-d', $end_date)->format('Y');
+
+        $days = [];
+        for ($i = $start_month; $i <= $end_month; $i++) {
+            foreach ($weekdays as $weekday) {
+                switch ($weekday) {
+                    case 1:
+                        $day = config('constant.weekdays.MONDAY');
+                        break;
+                    case 2:
+                        $day = config('constant.weekdays.TUESDAY');
+                        break;
+                    case 3:
+                        $day = config('constant.weekdays.WEDNESDAY');
+                        break;
+                    case 4:
+                        $day = config('constant.weekdays.THURSDAY');
+                        break;
+                    case 5:
+                        $day = config('constant.weekdays.FRIDAY');
+                        break;
+                    case 6:
+                        $day = config('constant.weekdays.SATURDAY');
+                        break;
+                    case 7:
+                        $day = config('constant.weekdays.SUNDAY');
+                        break;
+                    default:
+                        $day = null;
+                        break;
+                }
+
+                $day = getAllDaysInAMonth($start_year, $i, $day);
+
+                foreach ($days as $day) {
+                    $schedule = new Schedules();
+                    $schedule->weekday_id = $weekday;
+                    $schedule->date = $day;
+                    $schedule->subject_id = $class->subject_id;
+                    $schedule->save();
+                }
+            }
+        }
     }
 }

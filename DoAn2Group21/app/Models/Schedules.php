@@ -5,14 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ClassStudent extends Model
+class Schedules extends Model
 {
     use HasFactory;
 
-    public $timestamps = false; 
-
-    protected $fillable = [
-        'user_id',
-        'class_id',
+    protected $fillable = [	
+        'weekday_id',	
+        'date',
+        'subject_id',
     ];
 }

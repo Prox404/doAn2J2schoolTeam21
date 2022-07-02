@@ -37,7 +37,8 @@ class SubjectsController extends Controller
                     ::selectRaw('count(*)')
                     ->whereColumn('classes.subject_id', 'subjects.id')
             ])
-            ->leftJoin('classes', 'subjects.id', 'classes.subject_id');
+            ->leftJoin('classes', 'subjects.id', 'classes.subject_id')
+            ->groupBy('subjects.id');
         
         return DataTables::of($query)
         ->addColumn('edit', function ($object) {

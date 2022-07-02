@@ -1,6 +1,6 @@
 @extends('layout.master')
 @push('title')
-<title>Classes</title>
+    <title>Classes</title>
 @endpush
 @push('css')
     {{-- css start --}}
@@ -23,8 +23,6 @@
                     <h4 class="card-title">Sửa lý thông tin lớp</h4>
                 </div>
                 <div class="card-body">
-                    {{$class}}
-                    {{$subject}}
                     <div class="col-12 d-flex justify-content-start mb-3">
                         <form class="form form-vertical" action="{{ Route('class.update', $class) }}" method="POST">
                             @csrf
@@ -34,25 +32,26 @@
                                         <div class="form-group">
                                             <label for="name-vertical">Class Name</label>
                                             <input type="text" id="name-vertical" class="form-control" name="name"
-                                                placeholder="Class Name">
+                                                value="{{ $class->name }}">
                                         </div>
                                         <div class="form-group">
                                             <label for="subject">Môn học</label>
                                             <select class="choices form-select" id="subject" name="subject">
                                                 @foreach ($subject as $data)
-                                                    <option value="{{$data->id}}">{{$data->name}}</option>
+                                                    <option value="{{ $data->id }}">{{ $data->name }}</option>
                                                 @endforeach
                                             </select>
                                         </div>
                                         <div class="form-group">
                                             <label for="weekday">Buổi học</label>
-                                            <select id="weekday" name="weekday[]" class="choices form-select multiple-remove" multiple="multiple">
-                                                <option value="1">Thứ 2</option>
+                                            <select id="weekday" name="weekday[]"
+                                                class="choices form-select multiple-remove" multiple="multiple">
+                                                <option value="1" selected>Thứ 2</option>
                                                 <option value="2">Thứ 3</option>
                                                 <option value="3">Thứ 4</option>
-                                                <option value="4">Thứ 5</option>
+                                                <option value="4" selected>Thứ 5</option>
                                                 <option value="5">Thứ 6</option>
-                                                <option value="6">Thứ 7</option>
+                                                <option value="6" selected>Thứ 7</option>
                                                 <option value="7">Chủ nhật</option>
                                             </select>
                                         </div>
@@ -77,10 +76,21 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h4 class="card-title">Danh sach hoc sinh</h4>
+                    <h4 class="card-title">Danh sách học sinh lớp {{$class->name}}</h4>
                 </div>
                 <div class="card-body">
-                    
+                    <div class="col-12 d-flex justify-content-start mb-3">
+                        <div class="input-group">
+                            <form action="{{ route('classStudent.import') }}" method="POST" enctype="multipart/form-data" class="d-flex justify-content-start">
+                                @csrf
+                                <div class="input-group me-2">
+                                    <label class="input-group-text" for="user-file"><i class="bi bi-upload"></i></label>
+                                    <input type="file" class="form-control" id="user-file" name="user_file" accept=".xlsx, .xls, .csv, .ods">
+                                </div>
+                                <button type="submit" class="btn btn-info" OnClick="return confirm('Are u sủe ?')">Import</button>
+                            </form>
+                        </div>
+                    </div>
                     <table id="basic-datatable" class="table dt-responsive nowrap w-100">
                         <thead>
                             <tr>
@@ -104,7 +114,6 @@
 @stop
 @push('js')
     {{-- js start --}}
-    <script src="{{ asset('js/pages/localest-all.js') }}"></script>
     <script type="text/javascript"
         src="https://cdn.datatables.net/v/bs5/jq-3.6.0/dt-1.12.1/b-2.2.3/sl-1.4.0/datatables.min.js"></script>
     <script src="{{ asset('vendors/choices.js/choices.min.js') }}"></script>
@@ -130,7 +139,7 @@
                         orderable: false,
                         searchable: false,
                         render: function(data, type, row, meta) {
-                            return `<a class="btn btn-success" >
+                            return `<a class="btn btn-success" href="${data}" >
                                 Edit
                             </a>`;
                         }
@@ -142,7 +151,7 @@
                         searchable: false,
                         render: function(data) {
 
-                            return `<form method="post">
+                            return `<form action="${data}" method="post">
                             @csrf
                             @method('DELETE')
                             <button type='submit' class="btn-delete btn btn-danger">Delete</button>

@@ -38,6 +38,10 @@ class StoreRequest extends FormRequest
                 'required',
                 'date',
             ],
+            'class_sessions' => [
+                'required',
+                'integer',
+            ],
         ];
     }
 }

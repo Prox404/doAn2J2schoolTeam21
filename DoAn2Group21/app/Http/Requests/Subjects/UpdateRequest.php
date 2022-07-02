@@ -35,6 +35,9 @@ class UpdateRequest extends FormRequest
             'end_date' => [
                 'date',
             ],
+            'class_sessions' => [
+                'integer',
+            ],
         ];
     }
 }

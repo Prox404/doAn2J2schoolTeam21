@@ -37,6 +37,11 @@
                                         <input type="date" id="end-date-vertical" class="form-control" name="end_date"
                                             value="{{$subject->end_date}}">
                                     </div>
+                                    <div class="form-group">
+                                        <label for="end-date-vertical">Numbers Sessions</label>
+                                        <input type="number" id="end-date-vertical" class="form-control" name="class_sessions"
+                                            value="{{$subject->class_sessions}}">
+                                    </div>
                                 </div>
                                 <div class="col-12 d-flex justify-content-end">
                                     <button type="submit" class="btn btn-primary me-1 mb-1">Submit</button>

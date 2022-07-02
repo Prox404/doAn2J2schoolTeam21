@@ -31,6 +31,9 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Number Classes</th>
+                                <th>Number Sessions</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
                                 <th>Edit</th>
                                 <th>Destroy</th>
                             </tr>
@@ -75,6 +78,11 @@
                                         <input type="date" id="end-date-vertical" class="form-control" name="end_date"
                                             placeholder="End Date">
                                     </div>
+                                    <div class="form-group">
+                                        <label for="end-date-vertical">Numbers Sessions</label>
+                                        <input type="number" id="end-date-vertical" class="form-control" name="class_sessions"
+                                            placeholder="Numbers Sessions">
+                                    </div>
                                 </div>
                                 <div class="col-12 d-flex justify-content-end">
                                     <button type="submit" class="btn btn-primary me-1 mb-1">Submit</button>
@@ -111,8 +119,23 @@
                         searchable: false
                     },
                     {
+                        data: 'class_sessions',
+                        name: 'class_sessions',
+                        searchable: false
+                    },
+                    {
+                        data: 'start_date',
+                        name: 'start_date',
+                        searchable: false
+                    },
+                    {
+                        data: 'end_date',
+                        name: 'end_date',
+                        searchable: false
+                    },
+                    {
                         data: 'edit',
-                        targets: 2,
+                        targets: 5,
                         orderable: false,
                         searchable: false,
                         render: function(data, type, row, meta) {
@@ -123,7 +146,7 @@
                     },
                     {
                         data: 'destroy',
-                        targets: 3,
+                        targets: 6,
                         orderable: false,
                         searchable: false,
                         render: function(data) {
