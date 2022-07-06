@@ -15,4 +15,9 @@ class ClassStudent extends Model
         'user_id',
         'class_id',
     ];
+
+    public function attendance()
+    {
+        return $this->hasMany('App\Models\Attendance', 'user_id');
+    }
 }

@@ -61,12 +61,11 @@ Route::group(['prefix'=>'classes', 'as' => 'class.'], function (){
 Route::group(['prefix'=>'attendance', 'as' => 'attendance.'], function (){
     Route::get('/', [\App\Http\Controllers\AttendanceController::class,'index'])->name('index');
     Route::get('api', [\App\Http\Controllers\AttendanceController::class,'api'])->name('api');
-    Route::get('userApi/{id}', [\App\Http\Controllers\AttendanceController::class,'userApi'])->name('userApi');
-    Route::get('edit/{class}', [\App\Http\Controllers\AttendanceController::class,'edit'])->name('edit');
-    Route::get('edit/{class}', [\App\Http\Controllers\AttendanceController::class,'history'])->name('history');
-    Route::put('update', [\App\Http\Controllers\AttendanceController::class,'update'])->name('update');
+    Route::get('history/{class}', [\App\Http\Controllers\AttendanceController::class,'history'])->name('history');
+    Route::get('/history/{class_id}/{schedule_id}', [\App\Http\Controllers\AttendanceController::class,'attendance'])->name('attendance');
+    Route::put('store', [\App\Http\Controllers\AttendanceController::class,'store'])->name('store');
     Route::delete('/destroy/{classes}', [\App\Http\Controllers\AttendanceController::class,'destroy'])->name('destroy');
-    Route::post('/create', [\App\Http\Controllers\AttendanceController::class,'store'])->name('store');
+
 });
 
 Route::group(['prefix'=>'schedules', 'as' => 'schedule.'], function (){

@@ -8,6 +8,8 @@
     <link rel="stylesheet" type="text/css"
         href="https://cdn.datatables.net/v/bs5/jq-3.6.0/dt-1.12.1/b-2.2.3/sl-1.4.0/datatables.min.css" />
     <link rel="stylesheet" href="{{ asset('vendors/choices.js/choices.min.css') }}" />
+    <link rel="stylesheet" href="{{asset('css/pages/dripicons.css')}}">
+    <link rel="stylesheet" href="{{asset('/vendors/dripicons/webfont.css')}}">
     {{-- css end --}}
 @endpush
 @section('content')
@@ -18,6 +20,47 @@
             </div>
         @endif
         <section class="row">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Số buổi học</h4>
+                </div>
+                <div class="card-body">
+                    @foreach ($class_sessions as $class_session)
+                    <div class="btn-group btn-group-sm mb-2" role="group">
+                        <a href="{{$class->id}}/{{$class_session->id}}" class="btn btn-primary">
+                            @switch($class_session->weekday_id)
+                                @case(1)
+                                    Mon,
+                                    @break
+                                @case(2)
+                                    Tue,
+                                    @break
+                                @case(3)
+                                    Wed,
+                                    @break
+                                @case(4)
+                                    Thu,
+                                    @break
+                                @case(5)
+                                    Fri,
+                                    @break
+                                @case(6)
+                                    Sat,
+                                    @break
+                                @case(7)
+                                    Sun,
+                                    @break
+                                @default
+                                    Unknown, 
+                            @endswitch
+
+                            {{$class_session->date}}
+                        </a>
+                        <button type="button" class="btn"><i class="icon dripicons-cross"></i></button>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
             <div class="card">
                 <div class="card-header">
                     <h4 class="card-title">Quản lý môn học</h4>
