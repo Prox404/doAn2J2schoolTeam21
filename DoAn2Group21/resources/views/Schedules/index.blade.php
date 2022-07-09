@@ -1,82 +1,118 @@
-<?php
+@extends('layout.master')
+@push('title')
+    <title>Classes</title>
+@endpush
+@push('css')
+    {{-- css start --}}
+    <link href="{{ asset('vendors/simple-datatables/style.css') }}" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css"
+        href="https://cdn.datatables.net/v/bs5/jq-3.6.0/dt-1.12.1/b-2.2.3/sl-1.4.0/datatables.min.css" />
+    <link rel="stylesheet" href="{{ asset('vendors/choices.js/choices.min.css') }}" />
+    {{-- css end --}}
+@endpush
+@section('content')
+    <div class="page-content">
+        @if (session()->has('message'))
+            <div class="alert alert-success">
+                {{ session()->get('message') }}
+            </div>
+        @endif
+        <section class="row">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Danh sách lớp học</h4>
+                </div>
+                <div class="card-body">
+                    <table id="basic-datatable" class="table dt-responsive nowrap w-100">
+                        <thead>
+                            <tr>
+                                <th>Class Name</th>
+                                <th>Subject Name</th>
+                                <th>Edit</th>
+                                <th>Destroy</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
 
-const MONDAY = 'Monday';
-const TUESDAY = 'Tuesday';
-const WEDDAY = 'Wednesday';
-const THURSDAY = 'Thursday';
-const FRIDAY = 'Friday';
-const SATURDAY = 'Saturday';
-const SUNDAY = 'Sunday';
 
-$weekdays = [2, 5, 7];
-$start_date = new DateTime('2022-06-23');
-$end_date = new DateTime('2022-08-23');
+                        <tbody>
 
-function getAllDaysInAMonth($year, $month, $day, $daysError = 30)
-{
-    $dateString = 'first ' . $day . ' of ' . $year . '-' . $month;
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+@stop
+@push('js')
+    {{-- js start --}}
+    <script type="text/javascript"
+        src="https://cdn.datatables.net/v/bs5/jq-3.6.0/dt-1.12.1/b-2.2.3/sl-1.4.0/datatables.min.js"></script>
+    <script src="{{ asset('vendors/choices.js/choices.min.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            "use strict";
 
-    if (!strtotime($dateString)) {
-        throw new \Exception('"' . $dateString . '" is not a valid strtotime');
-    }
+            let table = $("#basic-datatable").DataTable({
+                keys: !0,
+                processing: true,
+                serverSide: true,
+                ajax: '{!! route('schedule.classApi') !!}',
+                columns: [{
+                        data: 'name',
+                        name: 'name'
+                    },
+                    {
+                        data: 'subject_name',
+                        name: 'subject_name'
+                    },
+                    {
+                        data: 'edit',
+                        targets: 2,
+                        orderable: false,
+                        searchable: false,
+                        render: function(data, type, row, meta) {
+                            return `<a class="btn btn-success" href="${data}" >
+                                Edit
+                            </a>`;
+                        }
+                    },
+                    {
+                        data: 'destroy',
+                        targets: 3,
+                        orderable: false,
+                        searchable: false,
+                        render: function(data) {
 
-    $startDay = new \DateTime($dateString);
+                            return `<form action="${data}" method="post">
+                            @csrf
+                            @method('DELETE')
+                            <button type='submit' class="btn-delete btn btn-danger">Delete</button>
+                        </form>`;
+                        }
+                    },
+                    {
+                        data: 'autoSchedule',
+                        targets: 4,
+                        orderable: false,
+                        searchable: false,
+                        render: function(data, type) {
+                            if (data === 1) {
+                                return `
+                                    <button class="btn btn-primary" disabled>
+                                        Môn này đã có lịch học
+                                    </button>`;
+                            } else {
+                                return `<a class="btn btn-danger" href="${data}" >
+                                    Tạo lịch
+                                </a>`;
+                            }
+                        }
+                    }
+                ]
+            });
 
-    if ($startDay->format('j') > $daysError) {
-        $startDay->modify('- 7 days');
-    }
-
-    $days = [];
-
-    while ($startDay->format('Y-m') <= $year . '-' . str_pad($month, 2, 0, STR_PAD_LEFT)) {
-        $days[] = clone $startDay;
-        $startDay->modify('+ 7 days');
-    }
-
-    return $days;
-}
-
-$start_month = $start_date->format('m');
-$end_month = $end_date->format('m');
-$start_year = $start_date->format('Y');
-$end_year = $end_date->format('Y');
-
-$days = [];
-for ($i = $start_month; $i <= $end_month; $i++) {
-    foreach ($weekdays as $weekday) {
-        switch ($weekday) {
-            case 1:
-                $day = MONDAY;
-                break;
-            case 2:
-                $day = TUESDAY;
-                break;
-            case 3:
-                $day = WEDDAY;
-                break;
-            case 4:
-                $day = THURSDAY;
-                break;
-            case 5:
-                $day = FRIDAY;
-                break;
-            case 6:
-                $day = SATURDAY;
-                break;
-            case 7:
-                $day = SUNDAY;
-                break;
-            default:
-                $day = null;
-                break;
-        }
-
-        $days = getAllDaysInAMonth($start_year, $i, $day);
-
-        foreach ($days as $dayx) {
-            echo $dayx->format('Y-m-d') . '<br>';
-        }
-    }
-}
-
-?>
+        });
+    </script>
+    {{-- js end --}}
+@endpush

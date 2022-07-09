@@ -20,4 +20,9 @@ class Classes extends Model
     {
         $this->hasMany(ClassesWeekday::class, 'class_id', 'id');
     }
+
+    public function Schedule()
+    {
+        return $this->hasMany('App\Models\Schedules', 'class_id');
+    }
 }

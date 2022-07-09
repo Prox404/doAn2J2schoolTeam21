@@ -70,6 +70,8 @@ Route::group(['prefix'=>'attendance', 'as' => 'attendance.'], function (){
 
 Route::group(['prefix'=>'schedules', 'as' => 'schedule.'], function (){
     Route::get('/', [\App\Http\Controllers\SchedulesController::class,'index'])->name('index');
+    Route::get('classApi', [\App\Http\Controllers\SchedulesController::class,'classApi'])->name('classApi');
+    Route::get('edit/{classes}', [\App\Http\Controllers\SchedulesController::class,'edit'])->name('edit');
 });
 
 Route::group(['prefix'=>'classStudent', 'as' => 'classStudent.'], function (){

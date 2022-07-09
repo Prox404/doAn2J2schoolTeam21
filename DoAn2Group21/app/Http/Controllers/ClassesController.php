@@ -51,9 +51,6 @@ class ClassesController extends Controller
             ->addColumn('destroy', function ($object) {
                 return route('class.destroy', $object);
             })
-            ->addColumn('autoSchedule', function ($object) {
-                return route('class.autoSchedule', $object);
-            })
             ->make(true);
     }
 
@@ -227,11 +224,12 @@ class ClassesController extends Controller
                     $schedule->weekday_id = $weekday;
                     $schedule->date = $day;
                     $schedule->subject_id = $class->subject_id;
+                    $schedule->class_id = $id;
                     $schedule->save();
                 }
             }
         }
 
-        return redirect()->route('classes.index')->with('message', 'Success create auto schedule !!!');
+        return redirect()->route('schedule.index')->with('message', 'Success create auto schedule !!!');
     }
 }
