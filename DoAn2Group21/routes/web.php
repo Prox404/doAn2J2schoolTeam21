@@ -18,7 +18,7 @@ Route::get('/', function () {
     return view('home');
 })->middleware('requiredLogin');
 
-Route::get('dashboard', [AuthController::class, 'dashboard']); 
+Route::get('dashboard', [AuthController::class, 'dashboard'])->name('dashboard'); 
 Route::get('login', [AuthController::class, 'index'])->name('login')->middleware('isLogin');
 Route::post('custom-login', [AuthController::class, 'customLogin'])->name('login.custom'); 
 Route::get('registration', [AuthController::class, 'registration'])->name('register-user')->middleware('isLogin');
@@ -53,8 +53,9 @@ Route::group(['prefix'=>'classes', 'as' => 'class.'], function (){
     Route::get('userApi/{id}', [\App\Http\Controllers\ClassesController::class,'userApi'])->name('userApi');
     Route::get('edit/{classes}', [\App\Http\Controllers\ClassesController::class,'edit'])->name('edit');
     Route::get('autoSchedule/{id}', [\App\Http\Controllers\ClassesController::class,'autoSchedule'])->name('autoSchedule');
-    Route::put('update', [\App\Http\Controllers\ClassesController::class,'update'])->name('update');
+    Route::put('update/{class}', [\App\Http\Controllers\ClassesController::class,'update'])->name('update');
     Route::delete('/destroy/{classes}', [\App\Http\Controllers\ClassesController::class,'destroy'])->name('destroy');
+    Route::get('/addTeacher/{classes}', [\App\Http\Controllers\ClassesController::class,'addTeacher'])->name('addTeacher');
     Route::post('/create', [\App\Http\Controllers\ClassesController::class,'store'])->name('store');
 });
 
@@ -71,7 +72,10 @@ Route::group(['prefix'=>'attendance', 'as' => 'attendance.'], function (){
 Route::group(['prefix'=>'schedules', 'as' => 'schedule.'], function (){
     Route::get('/', [\App\Http\Controllers\SchedulesController::class,'index'])->name('index');
     Route::get('classApi', [\App\Http\Controllers\SchedulesController::class,'classApi'])->name('classApi');
-    Route::get('edit/{classes}', [\App\Http\Controllers\SchedulesController::class,'edit'])->name('edit');
+    Route::get('edit/{class}', [\App\Http\Controllers\SchedulesController::class,'edit'])->name('edit');
+    Route::get('edit/getSchedule/{schedule}', [\App\Http\Controllers\SchedulesController::class,'getSchedule'])->name('getSchedule');
+    Route::delete('destroy/{schedule}', [\App\Http\Controllers\SchedulesController::class,'destroy'])->name('destroy');
+    Route::put('update', [\App\Http\Controllers\SchedulesController::class,'update'])->name('update');
 });
 
 Route::group(['prefix'=>'classStudent', 'as' => 'classStudent.'], function (){

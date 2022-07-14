@@ -11,10 +11,22 @@ use App\Models\Subjects;
 use App\Models\User;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\View;
 use Yajra\DataTables\DataTables;
 
 class AttendanceController extends Controller
 {
+
+    public function __construct()
+    {
+        $routeName = Route::currentRouteName();
+        $arr         = explode('.', $routeName);
+        $arr         = array_map('ucfirst', $arr);
+        $title       = implode(' / ', $arr);
+        View::share('title', $title);
+    }
+
     public function index()
     {
         $subjects = Subjects::query()

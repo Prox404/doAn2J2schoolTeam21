@@ -16,9 +16,9 @@ class Classes extends Model
         'subject_id',
     ];
 
-    public function ClassWeekDay()
+    public function ClassWeekday()
     {
-        $this->hasMany(ClassesWeekday::class, 'class_id', 'id');
+        return $this->hasMany('App\Models\Schedules', 'class_id');
     }
 
     public function Schedule()

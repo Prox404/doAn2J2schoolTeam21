@@ -26,10 +26,12 @@
                     <div class="col-12 d-flex justify-content-start mb-3">
                         <form class="form form-vertical" action="{{ Route('class.update', $class) }}" method="POST">
                             @csrf
+                            @method('PUT')
                             <div class="form-body">
                                 <div class="row">
                                     <div class="col-12">
                                         <div class="form-group">
+                                            <input type="hidden" name="id" value="{{ $class->id }}">
                                             <label for="name-vertical">Class Name</label>
                                             <input type="text" id="name-vertical" class="form-control" name="name"
                                                 value="{{ $class->name }}">
@@ -46,13 +48,41 @@
                                             <label for="weekday">Buổi học</label>
                                             <select id="weekday" name="weekday[]"
                                                 class="choices form-select multiple-remove" multiple="multiple">
-                                                <option value="1" selected>Thứ 2</option>
-                                                <option value="2">Thứ 3</option>
-                                                <option value="3">Thứ 4</option>
-                                                <option value="4" selected>Thứ 5</option>
-                                                <option value="5">Thứ 6</option>
-                                                <option value="6" selected>Thứ 7</option>
-                                                <option value="7">Chủ nhật</option>
+                                                <option value="1" 
+                                                    @if (isset($class->ClassWeekday()->where('weekday_id', 1)->first()->class_id))
+                                                        selected
+                                                    @endif
+                                                >Thứ 2</option>
+                                                <option value="2"
+                                                    @if (isset($class->ClassWeekday()->where('weekday_id', 2)->first()->class_id))
+                                                        selected
+                                                    @endif
+                                                >Thứ 3</option>
+                                                <option value="3"
+                                                    @if (isset($class->ClassWeekday()->where('weekday_id', 3)->first()->class_id))
+                                                        selected
+                                                    @endif
+                                                >Thứ 4</option>
+                                                <option value="4" 
+                                                    @if (isset($class->ClassWeekday()->where('weekday_id', 4)->first()->class_id))
+                                                        selected
+                                                    @endif
+                                                >Thứ 5</option>
+                                                <option value="5"
+                                                    @if (isset($class->ClassWeekday()->where('weekday_id', 5)->first()->class_id))
+                                                        selected
+                                                    @endif
+                                                >Thứ 6</option>
+                                                <option value="6" 
+                                                    @if (isset($class->ClassWeekday()->where('weekday_id', 6)->first()->class_id))
+                                                        selected
+                                                    @endif
+                                                >Thứ 7</option>
+                                                <option value="7"
+                                                    @if (isset($class->ClassWeekday()->where('weekday_id', 7)->first()->class_id))
+                                                        selected
+                                                    @endif
+                                                >Chủ nhật</option>
                                             </select>
                                         </div>
                                         <div class="form-group">

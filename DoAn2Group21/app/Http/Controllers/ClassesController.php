@@ -45,6 +45,25 @@ class ClassesController extends Controller
             ->leftJoin('subjects', 'classes.subject_id', 'subjects.id');
 
         return DataTables::of($query)
+            ->addColumn('teacher', function ($object) {
+                $teacher = ClassStudent::query()
+                    ->addSelect('users.name as teacher')
+                    ->leftJoin('users', 'class_students.user_id', 'users.id')
+                    ->where('class_students.class_id', $object->id)
+                    ->first();
+
+                if (!empty($teacher->teacher)) {
+                    return [
+                        'name' => $teacher,
+                        'status' => 1,
+                    ];
+                } else {
+                    return [
+                        'href' => route('class.addTeacher', $object),
+                        'status' => 404,
+                    ];
+                }
+            })
             ->addColumn('edit', function ($object) {
                 return route('class.edit', $object);
             })
@@ -54,13 +73,38 @@ class ClassesController extends Controller
             ->make(true);
     }
 
-    public function update(Classes $class)
+    public function addTeacher()
     {
-        // UpdateRequest $request,
-        // $class->fill($request->validated());
-        // $class->update();
+        
+    }
 
-        // return redirect()->route('classes.index')->with('message', 'Success!!!');
+    public function update(Request $request)
+    {
+        $name = $request->name;
+        $subject_id = $request->subject;
+        $weekdays = $request->weekday;
+        $shift = $request->shift;
+
+        // $number_weekday = count($weekdays);
+
+        Classes::updateOrCreate([
+            'id' => $request->id,
+        ], [
+            'name' => $name,
+            'subject_id' => $subject_id
+        ]);
+
+        ClassWeekday::where('class_id', $request->id)->delete();
+
+        foreach ($weekdays as $weekday) {
+            ClassWeekday::create([
+                'class_id' => $request->id,
+                'shift' => $shift,
+                'weekday_id' => $weekday
+            ]);
+        }
+
+        return redirect()->route('classes.index')->with('message', 'Success update ' . $name . ' !!!');
     }
 
     public function edit($id)
@@ -166,18 +210,24 @@ class ClassesController extends Controller
     {
         $class = Classes::query()
             ->addSelect('classes.*')
-            ->addSelect('subjects.name as subject_name','subjects.end_date','subjects.start_date')
+            ->addSelect('subjects.name as subject_name', 'subjects.end_date', 'subjects.start_date')
             ->leftJoin('subjects', 'classes.subject_id', 'subjects.id')
             ->where('classes.id', '=', $id)
             ->first();
 
         // $class = $class->toArray();
-         
+
         $weekdays = ClassWeekday::query()
             ->addSelect('class_weekdays.weekday_id as weekdays')
             ->where('class_id', '=', $id)
             ->get();
         $weekdays = $weekdays->pluck('weekdays')->toArray();
+
+        $shift = ClassWeekday::query()
+            ->addSelect('class_weekdays.shift as shift')
+            ->where('class_id', '=', $id)
+            ->first();
+        $shift = $shift->shift;
 
         $start_date = new Carbon($class->start_date);
         $end_date = new Carbon($class->end_date);
@@ -225,6 +275,7 @@ class ClassesController extends Controller
                     $schedule->date = $day;
                     $schedule->subject_id = $class->subject_id;
                     $schedule->class_id = $id;
+                    $schedule->shift = $shift;
                     $schedule->save();
                 }
             }

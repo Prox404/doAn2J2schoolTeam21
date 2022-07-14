@@ -33,6 +33,7 @@
                             <tr>
                                 <th>Class Name</th>
                                 <th>Subject Name</th>
+                                <th>Teacher</th>
                                 <th>Edit</th>
                                 <th>Destroy</th>
                             </tr>
@@ -130,8 +131,25 @@
                         name: 'subject_name'
                     },
                     {
-                        data: 'edit',
+                        data: 'teacher',
                         targets: 2,
+                        orderable: false,
+                        searchable: false,
+                        render: function(data, type, row, meta) {
+                            console.log(data);
+                            if (data.status == 1) {
+                                return data.name.teacher;
+                            }else if(data.status == 404){
+                                return `<a class="btn btn-success" href="${data.href}" >
+                                    Thêm giáo viên
+                                </a>`;
+                            }
+                            
+                        }
+                    },
+                    {
+                        data: 'edit',
+                        targets: 3,
                         orderable: false,
                         searchable: false,
                         render: function(data, type, row, meta) {
@@ -142,7 +160,7 @@
                     },
                     {
                         data: 'destroy',
-                        targets: 3,
+                        targets: 4,
                         orderable: false,
                         searchable: false,
                         render: function(data) {

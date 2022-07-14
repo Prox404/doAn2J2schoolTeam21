@@ -1,6 +1,6 @@
 @extends('layout.master')
 @push('title')
-    <title>Classes</title>
+    <title>Schedule</title>
 @endpush
 @push('css')
     {{-- css start --}}
