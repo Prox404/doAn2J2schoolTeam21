@@ -7,6 +7,7 @@ use App\Models\ClassStudent;
 use App\Models\ClassWeekday;
 use App\Models\Schedules;
 use App\Models\Subjects;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\View as View;
@@ -50,6 +51,7 @@ class ClassesController extends Controller
                     ->addSelect('users.name as teacher')
                     ->leftJoin('users', 'class_students.user_id', 'users.id')
                     ->where('class_students.class_id', $object->id)
+                    ->where('users.level', 2)
                     ->first();
 
                 if (!empty($teacher->teacher)) {
@@ -73,9 +75,26 @@ class ClassesController extends Controller
             ->make(true);
     }
 
-    public function addTeacher()
+    public function addTeacher($id)
     {
+        $teachers = User::query()
+            ->addSelect('users.id as id', 'users.name as name')
+            ->where('level', 2)
+            ->get();
         
+        return view('classes.addTeacher', [
+            'teachers' => $teachers,
+            'class_id' => $id,
+        ]);
+    }
+
+    public function storeTeacher(Request $request)
+    {
+        $teacher = new ClassStudent();
+        $teacher->class_id = $request->class_id;
+        $teacher->user_id = $request->teacher;
+        $teacher->save();
+        return redirect()->route('class.index', $request->class_id)->with('success', 'Teacher added successfully');
     }
 
     public function update(Request $request)
@@ -83,9 +102,26 @@ class ClassesController extends Controller
         $name = $request->name;
         $subject_id = $request->subject;
         $weekdays = $request->weekday;
-        $shift = $request->shift;
+        $shift = $request->shift; 
+        $teacher_id = $request->teacher;
 
         // $number_weekday = count($weekdays);
+
+        $teacher = ClassStudent::query()
+            ->addSelect('users.id as id')
+            ->leftJoin('users', 'class_students.user_id', 'users.id')
+            ->where('class_students.class_id', $request->id)
+            ->where('users.level', 2)
+            ->first();
+
+        if(!empty($teacher)){
+            $current_teacher_id = $teacher->id;
+            ClassStudent::where('user_id', $current_teacher_id)->delete();
+        }
+        ClassStudent::create([
+            'class_id' => $request->id,
+            'user_id' => $teacher_id,
+        ]);
 
         Classes::updateOrCreate([
             'id' => $request->id,
@@ -104,7 +140,7 @@ class ClassesController extends Controller
             ]);
         }
 
-        return redirect()->route('classes.index')->with('message', 'Success update ' . $name . ' !!!');
+        return redirect()->route('class.index')->with('message', 'Success update ' . $name . ' !!!');
     }
 
     public function edit($id)
@@ -117,12 +153,30 @@ class ClassesController extends Controller
             'name',
         ]);
 
+        $teacher = ClassStudent::query()
+            ->addSelect('users.id as teacher_id')
+            ->leftJoin('users', 'class_students.user_id', 'users.id')
+            ->where('class_students.class_id', $id)
+            ->where('users.level', 2)
+            ->first();
+
+        if(!isset($teacher)){
+            $teacher = null;
+        }
+        
+        $teachers = User::query()
+            ->addSelect('users.id as user_id', 'users.name as user_name')
+            ->where('level', 2)
+            ->get();
+
         $weekdays = ClassWeekday::query()
             ->addSelect('class_weekdays.*')
             ->where('class_id', '=', $id);
 
         return view('classes.edit', [
             'class' => $class,
+            'current_teacher' => $teacher,
+            'teachers' => $teachers,
             'subject' => $subject_data,
             'weekdays' => $weekdays,
         ]);

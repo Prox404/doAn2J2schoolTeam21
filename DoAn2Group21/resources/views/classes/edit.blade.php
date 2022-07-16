@@ -85,6 +85,22 @@
                                                 >Chủ nhật</option>
                                             </select>
                                         </div>
+
+                                        <div class="form-group">
+                                            <label for="teacher">Giảng viên</label>
+                                            <select class="choices form-select" id="teacher" name="teacher">
+                                                @foreach ($teachers as $data)
+                                                    <option value="{{ $data->user_id }}" 
+                                                     @if(!empty($current_teacher))
+                                                        @if ($current_teacher->teacher_id == $data->user_id)
+                                                                selected
+                                                        @endif
+                                                    @endif
+                                                    >{{ $data->user_name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        {{-- {{$current_teacher}} --}}
                                         <div class="form-group">
                                             <label for="shift">Ca</label>
                                             <select class="choices form-select" id="shift" name="shift">

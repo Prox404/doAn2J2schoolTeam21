@@ -56,6 +56,7 @@ Route::group(['prefix'=>'classes', 'as' => 'class.'], function (){
     Route::put('update/{class}', [\App\Http\Controllers\ClassesController::class,'update'])->name('update');
     Route::delete('/destroy/{classes}', [\App\Http\Controllers\ClassesController::class,'destroy'])->name('destroy');
     Route::get('/addTeacher/{classes}', [\App\Http\Controllers\ClassesController::class,'addTeacher'])->name('addTeacher');
+    Route::put('storeTeacher', [\App\Http\Controllers\ClassesController::class,'storeTeacher'])->name('storeTeacher');
     Route::post('/create', [\App\Http\Controllers\ClassesController::class,'store'])->name('store');
 });
 
