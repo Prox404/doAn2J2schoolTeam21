@@ -1,6 +1,6 @@
 @extends('layout.master')
 @push('title')
-<title>Classes</title>
+    <title>Classes</title>
 @endpush
 @push('css')
     {{-- css start --}}
@@ -20,12 +20,26 @@
         <section class="row">
             <div class="card">
                 <div class="card-header">
-                    <h4 class="card-title">Quản lý môn học</h4>
+                    <h4 class="card-title">Quản lý lớp học</h4>
                 </div>
                 <div class="card-body">
                     <div class="col-12 d-flex justify-content-start mb-3">
                         <a href="#" type="button" class="btn btn-success me-1 " data-bs-toggle="modal"
                             data-bs-target="#addSubjectModal">Thêm môn học</a>
+
+                        <div class="input-group" style="width:40%;">
+                            <form action="{{ route('user.advancedImport') }}" method="POST" enctype="multipart/form-data"
+                                class="d-flex justify-content-start">
+                                @csrf
+                                <div class="input-group me-2">
+                                    <input type="file" class="form-control" id="user-file" name="user_file"
+                                        accept=".xlsx, .xls, .csv, .ods">
+                                
+                                <button type="submit" class="btn btn-info"
+                                    OnClick="return confirm('Are u sủe ?')">Import</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
 
                     <table id="basic-datatable" class="table dt-responsive nowrap w-100">
@@ -72,13 +86,14 @@
                                         <label for="subject">Môn học</label>
                                         <select class="choices form-select" id="subject" name="subject">
                                             @foreach ($subject as $data)
-                                                <option value="{{$data->id}}">{{$data->name}}</option>
+                                                <option value="{{ $data->id }}">{{ $data->name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
                                     <div class="form-group">
                                         <label for="weekday">Buổi học</label>
-                                        <select id="weekday" name="weekday[]" class="choices form-select multiple-remove" multiple="multiple">
+                                        <select id="weekday" name="weekday[]" class="choices form-select multiple-remove"
+                                            multiple="multiple">
                                             <option value="1">Thứ 2</option>
                                             <option value="2">Thứ 3</option>
                                             <option value="3">Thứ 4</option>
@@ -139,12 +154,12 @@
                             console.log(data);
                             if (data.status == 1) {
                                 return data.name.teacher;
-                            }else if(data.status == 404){
+                            } else if (data.status == 404) {
                                 return `<a class="btn btn-success" href="${data.href}" >
                                     Thêm giáo viên
                                 </a>`;
                             }
-                            
+
                         }
                     },
                     {

@@ -26,6 +26,11 @@ class ClassesController extends Controller
         View::share('title', $title);
     }
 
+    public function test()
+    {
+        return view('classes.test');
+    }
+
     public function index()
     {
         $subject = new Subjects();
@@ -337,4 +342,6 @@ class ClassesController extends Controller
 
         return redirect()->route('schedule.index')->with('message', 'Success create auto schedule !!!');
     }
+
+    
 }

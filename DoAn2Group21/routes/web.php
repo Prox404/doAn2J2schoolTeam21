@@ -28,7 +28,7 @@ Route::get('signout', [AuthController::class, 'signOut'])->name('signout');
 Route::group([
     'prefix'=>'users', 
     'as' => 'user.',
-    'middleware' => 'requiredLogin'
+    // 'middleware' => 'requiredLogin'
 ], function (){
     Route::get('/', [\App\Http\Controllers\UsersController::class,'index'])->name('index');
     Route::get('api', [\App\Http\Controllers\UsersController::class,'api'])->name('api');
@@ -36,6 +36,7 @@ Route::group([
     Route::put('update/{user}', [\App\Http\Controllers\UsersController::class,'update'])->name('update');
     Route::delete('/destroy/{user}', [\App\Http\Controllers\UsersController::class,'destroy'])->name('destroy');
     Route::post('import/user', [\App\Http\Controllers\UsersController::class,'import'])->name('import');
+    Route::post('advancedImport/', [\App\Http\Controllers\UsersController::class,'advancedImport'])->name('advancedImport');
 });
 
 Route::group(['prefix'=>'subjects', 'as' => 'subject.'], function (){
@@ -49,6 +50,7 @@ Route::group(['prefix'=>'subjects', 'as' => 'subject.'], function (){
 
 Route::group(['prefix'=>'classes', 'as' => 'class.'], function (){
     Route::get('/', [\App\Http\Controllers\ClassesController::class,'index'])->name('index');
+    Route::get('test', [\App\Http\Controllers\ClassesController::class,'test'])->name('test');
     Route::get('api', [\App\Http\Controllers\ClassesController::class,'api'])->name('api');
     Route::get('userApi/{id}', [\App\Http\Controllers\ClassesController::class,'userApi'])->name('userApi');
     Route::get('edit/{classes}', [\App\Http\Controllers\ClassesController::class,'edit'])->name('edit');
