@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AlterTableClassses extends Migration
+class CreateAttendancesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,11 @@ class AlterTableClassses extends Migration
      */
     public function up()
     {
-        Schema::table('classes', function (Blueprint $table) {
-
+        Schema::create('attendances', function (Blueprint $table) {
+            $table->bigInteger('user_id');
+            $table->bigInteger('schedule_id');
+            $table->tinyInteger('status');
+            // $table->timestamps();
         });
     }
 
@@ -25,6 +28,6 @@ class AlterTableClassses extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('attendances');
     }
 }

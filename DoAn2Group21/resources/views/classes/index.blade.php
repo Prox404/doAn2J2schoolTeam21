@@ -25,7 +25,7 @@
                 <div class="card-body">
                     <div class="col-12 d-flex justify-content-start mb-3">
                         <a href="#" type="button" class="btn btn-success me-1 " data-bs-toggle="modal"
-                            data-bs-target="#addSubjectModal">Thêm môn học</a>
+                            data-bs-target="#addSubjectModal">Thêm lớp học</a>
 
                         <div class="input-group" style="width:40%;">
                             <form action="{{ route('user.advancedImport') }}" method="POST" enctype="multipart/form-data"

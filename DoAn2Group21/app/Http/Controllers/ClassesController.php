@@ -135,15 +135,15 @@ class ClassesController extends Controller
             'subject_id' => $subject_id
         ]);
 
-        ClassWeekday::where('class_id', $request->id)->delete();
+        // ClassWeekday::where('class_id', $request->id)->delete();
 
-        foreach ($weekdays as $weekday) {
-            ClassWeekday::create([
-                'class_id' => $request->id,
-                'shift' => $shift,
-                'weekday_id' => $weekday
-            ]);
-        }
+        // foreach ($weekdays as $weekday) {
+        //     ClassWeekday::create([
+        //         'class_id' => $request->id,
+        //         'shift' => $shift,
+        //         'weekday_id' => $weekday
+        //     ]);
+        // }
 
         return redirect()->route('class.index')->with('message', 'Success update ' . $name . ' !!!');
     }
@@ -174,17 +174,17 @@ class ClassesController extends Controller
             ->where('level', 2)
             ->get();
 
-        $weekdays = ClassWeekday::query()
-            ->addSelect('class_weekdays.*')
-            ->where('class_id', '=', $id);
+        // $weekdays = ClassWeekday::query()
+        //     ->addSelect('class_weekdays.*')
+        //     ->where('class_id', '=', $id);
 
-        return view('classes.edit', [
-            'class' => $class,
-            'current_teacher' => $teacher,
-            'teachers' => $teachers,
-            'subject' => $subject_data,
-            'weekdays' => $weekdays,
-        ]);
+        // return view('classes.edit', [
+        //     'class' => $class,
+        //     'current_teacher' => $teacher,
+        //     'teachers' => $teachers,
+        //     'subject' => $subject_data,
+        //     'weekdays' => $weekdays,
+        // ]);
     }
 
     public function userApi($id)
@@ -221,123 +221,47 @@ class ClassesController extends Controller
         $weekdays = $_POST['weekday'];
         $shift = $request->shift;
 
-        $number_weekday = count($weekdays);
-
         $class = new Classes();
         $class->name = $name;
         $class->subject_id = $subject_id;
+        $class->weekdays = $weekdays;
+        $class->shift = $shift;
         $class->save();
-        $insertedId = $class->id;
+        // $insertedId = $class->id;s
 
-        for ($i = 0; $i < $number_weekday; $i++) {
-            $class_weekday = new ClassWeekday();
-            $class_weekday->class_id = $insertedId;
-            $class_weekday->shift = $shift;
-            $class_weekday->weekday_id = $weekdays[$i];
-            $class_weekday->save();
-        }
-
+        // return $weekdays;
         // return $insertedId;
-        return redirect()->route('subject.index')->with('message', 'Success add ' . $name . ' !!!');
-    }
-
-    function getAllDaysInAMonth($year, $month, $day, $daysError = 30)
-    {
-        $dateString = 'first ' . $day . ' of ' . $year . '-' . $month;
-
-        if (!strtotime($dateString)) {
-            throw new \Exception('"' . $dateString . '" is not a valid strtotime');
-        }
-
-        $startDay = new \DateTime($dateString);
-
-        if ($startDay->format('j') > $daysError) {
-            $startDay->modify('- 7 days');
-        }
-
-        $days = [];
-
-        while ($startDay->format('Y-m') <= $year . '-' . str_pad($month, 2, 0, STR_PAD_LEFT)) {
-            $days[] = clone $startDay;
-            $startDay->modify('+ 7 days');
-        }
-
-        return $days;
+        return redirect()->route('class.index')->with('message', 'Success add ' . $name . ' !!!');
     }
 
     public function autoSchedule($id)
     {
-        $class = Classes::query()
-            ->addSelect('classes.*')
-            ->addSelect('subjects.name as subject_name', 'subjects.end_date', 'subjects.start_date')
-            ->leftJoin('subjects', 'classes.subject_id', 'subjects.id')
-            ->where('classes.id', '=', $id)
-            ->first();
+        $class = Classes::find($id)->with('subjects')->first();
 
-        // $class = $class->toArray();
+        $weekdays = $class->weekdays;
+        $subject = $class->subjects;
+        $class_sessions = intval($subject->class_sessions);
+        $start_date = $subject->start_date;
+        $date = new Carbon($start_date);
 
-        $weekdays = ClassWeekday::query()
-            ->addSelect('class_weekdays.weekday_id as weekdays')
-            ->where('class_id', '=', $id)
-            ->get();
-        $weekdays = $weekdays->pluck('weekdays')->toArray();
-
-        $shift = ClassWeekday::query()
-            ->addSelect('class_weekdays.shift as shift')
-            ->where('class_id', '=', $id)
-            ->first();
-        $shift = $shift->shift;
-
-        $start_date = new Carbon($class->start_date);
-        $end_date = new Carbon($class->end_date);
-
-        $start_month = $start_date->format('m');
-        $end_month = $end_date->format('m');
-        $start_year = $start_date->format('Y');
-        $end_year = $end_date->format('Y');
-
-        $days = [];
-        for ($i = $start_month; $i <= $end_month; $i++) {
-            foreach ($weekdays as $weekday) {
-                switch ($weekday) {
-                    case 1:
-                        $day = 'Monday';
-                        break;
-                    case 2:
-                        $day = 'Tuesday';
-                        break;
-                    case 3:
-                        $day = 'Wednesday';
-                        break;
-                    case 4:
-                        $day = 'Thursday';
-                        break;
-                    case 5:
-                        $day = 'Friday';
-                        break;
-                    case 6:
-                        $day = 'Saturday';
-                        break;
-                    case 7:
-                        $day = 'Sunday';
-                        break;
-                    default:
-                        $day = null;
-                        break;
-                }
-
-                $days = $this->getAllDaysInAMonth($start_year, $i, $day);
-
-                foreach ($days as $day) {
-                    $schedule = new Schedules();
-                    $schedule->weekday_id = $weekday;
-                    $schedule->date = $day;
-                    $schedule->subject_id = $class->subject_id;
-                    $schedule->class_id = $id;
-                    $schedule->shift = $shift;
-                    $schedule->save();
+        $count = 0;
+        try {
+            while (true) {
+                if ($count < $class_sessions) {
+                    if(in_array($date->isoFormat('E'), $weekdays)){
+                        $schedule = new Schedules();
+                        $schedule->class_id = $id;
+                        $schedule->date = $date->format('Y-m-d');
+                        $schedule->save();
+                        $count++;
+                    }
+                    $date->addDays(1);
+                }else{
+                    break;
                 }
             }
+        } catch (\Exception $e) {
+            return $e->getMessage();
         }
 
         return redirect()->route('schedule.index')->with('message', 'Success create auto schedule !!!');

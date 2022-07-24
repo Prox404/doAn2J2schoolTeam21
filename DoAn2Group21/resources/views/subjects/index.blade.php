@@ -33,7 +33,6 @@
                                 <th>Number Classes</th>
                                 <th>Number Sessions</th>
                                 <th>Start Date</th>
-                                <th>End Date</th>
                                 <th>Edit</th>
                                 <th>Destroy</th>
                             </tr>
@@ -72,11 +71,6 @@
                                         <label for="start-date-vertical">Start Date</label>
                                         <input type="date" id="start-date-vertical" class="form-control" name="start_date"
                                             placeholder="Start Date">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="end-date-vertical">End Date</label>
-                                        <input type="date" id="end-date-vertical" class="form-control" name="end_date"
-                                            placeholder="End Date">
                                     </div>
                                     <div class="form-group">
                                         <label for="end-date-vertical">Numbers Sessions</label>
@@ -129,13 +123,8 @@
                         searchable: false
                     },
                     {
-                        data: 'end_date',
-                        name: 'end_date',
-                        searchable: false
-                    },
-                    {
                         data: 'edit',
-                        targets: 5,
+                        targets: 4,
                         orderable: false,
                         searchable: false,
                         render: function(data, type, row, meta) {
@@ -146,7 +135,7 @@
                     },
                     {
                         data: 'destroy',
-                        targets: 6,
+                        targets: 5,
                         orderable: false,
                         searchable: false,
                         render: function(data) {

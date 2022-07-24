@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSchedulesTable extends Migration
+class CreateSubjectsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,12 @@ class CreateSchedulesTable extends Migration
      */
     public function up()
     {
-        Schema::create('schedules', function (Blueprint $table) {
+        Schema::create('subjects', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('weekday_id')->unsigned();
-            $table->date('date')->nullable();
-            $table->bigInteger('subject_id')->unsigned();
-//            $table->foreign('weekday_id')->references('id')->on('weekdays');
+            $table->string('name')->unique();
+            $table->integer('class_sessions');
+            $table->date('start_date');
+            // $table->timestamps();
         });
     }
 
@@ -29,6 +29,6 @@ class CreateSchedulesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('schedules');
+        Schema::dropIfExists('subjects');
     }
 }

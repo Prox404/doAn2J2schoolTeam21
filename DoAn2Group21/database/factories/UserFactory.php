@@ -15,10 +15,13 @@ class UserFactory extends Factory
      */
     public function definition()
     {
+        $birthday = $this->faker->dateTimeBetween('1990-01-01', '2012-12-31')->format('Y-m-d');
+
         return [
             'name' => $this->faker->name(),
+            'birthday' => $birthday,
             'email' => $this->faker->unique()->safeEmail(),
-            'password' => Hash::make('123'),
+            'password' => Hash::make($birthday),
             'level' => rand(1, 4),
             'added_by' => 1,
         ];

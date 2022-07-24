@@ -16,13 +16,17 @@ class Classes extends Model
         'subject_id',
     ];
 
-    public function ClassWeekday()
-    {
-        return $this->hasMany('App\Models\Schedules', 'class_id');
-    }
+    protected $casts = [
+        'weekdays' => 'array',
+    ];
 
     public function Schedule()
     {
         return $this->hasMany('App\Models\Schedules', 'class_id');
+    }
+
+    public function subjects()
+    {
+        return $this->belongsTo('App\Models\Subjects', 'subject_id');
     }
 }

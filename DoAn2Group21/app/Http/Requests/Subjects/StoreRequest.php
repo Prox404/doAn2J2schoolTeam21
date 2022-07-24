@@ -34,10 +34,6 @@ class StoreRequest extends FormRequest
                 'required',
                 'date',
             ],
-            'end_date' => [
-                'required',
-                'date',
-            ],
             'class_sessions' => [
                 'required',
                 'integer',

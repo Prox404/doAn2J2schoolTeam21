@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateWeekdaysTable extends Migration
+class CreateClassesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,13 @@ class CreateWeekdaysTable extends Migration
      */
     public function up()
     {
-        Schema::create('weekdays', function (Blueprint $table) {
+        Schema::create('classes', function (Blueprint $table) {
             $table->id();
-            $table->String('name');
+            $table->string('name')->unique();
+            $table->bigInteger('subject_id');
+            $table->tinyInteger('shift');
+            $table->json('weekdays');
+            // $table->timestamps();
         });
     }
 
@@ -26,6 +30,6 @@ class CreateWeekdaysTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('weekday');
+        Schema::dropIfExists('classes');
     }
 }

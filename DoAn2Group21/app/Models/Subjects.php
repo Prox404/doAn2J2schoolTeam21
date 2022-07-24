@@ -13,7 +13,11 @@ class Subjects extends Model
     protected $fillable = [
         'name',
         'start_date',
-        'end_date',
         'class_sessions',
     ];
+
+    public function classes()
+    {
+        return $this->hasMany('App\Models\Classes', 'subject_id');
+    }
 }

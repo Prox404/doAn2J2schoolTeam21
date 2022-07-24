@@ -97,14 +97,15 @@
                         orderable: false,
                         searchable: false,
                         render: function(data, type) {
-                            if (data === 1) {
-                                return `
-                                    <button class="btn btn-primary" disabled>
-                                        Môn này đã có lịch học
-                                    </button>`;
-                            } else {
-                                return `<a class="btn btn-danger" href="${data}" >
+                            if (data.status == 1) {
+                                return `<button class="btn btn-success" disabled>Lớp đã có lịch học</button>`;
+                            } else if (data.status == 404) {
+                                return `<a class="btn btn-danger" href="${data.href}" >
                                     Tạo lịch
+                                </a>`;
+                            }else if(data.status == 0) {
+                                return `<a class="btn btn-warning" href="${data.href}" >
+                                    Chưa thể tạo
                                 </a>`;
                             }
                         }

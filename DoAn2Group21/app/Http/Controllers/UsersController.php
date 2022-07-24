@@ -125,10 +125,6 @@ class UsersController extends Controller
                         ->get()
                         ->count();
 
-                    echo $numberStudent . PHP_EOL;
-
-                    // echo $number . '-' . $current_class->name . PHP_EOL;
-
                     if ($isValid != 0) {
                         $class_sessions = $this->getClassSessionByName($subjects, $data['subject']);
                         if ($numberStudent < $class_sessions) {
@@ -174,7 +170,6 @@ class UsersController extends Controller
                             ]);
                         }
                     }
-                    // $classes = $current_class->class_sessions;
                 } else {
                     if ($isValid != 0) {
                         $ClassName = $data['subject'] . '1';
@@ -204,7 +199,7 @@ class UsersController extends Controller
                 }
             }
 
-            return $import;
+            return redirect()->back()->with('message', 'Success!!!');
         } catch (\Exception $e) {
             return redirect()->back()->with('message', "File lỗi, vui lòng kiểm tra file !!" . $e->getMessage());
         }

@@ -33,11 +33,6 @@
                                             value="{{$subject->start_date}}">
                                     </div>
                                     <div class="form-group">
-                                        <label for="end-date-vertical">End Date</label>
-                                        <input type="date" id="end-date-vertical" class="form-control" name="end_date"
-                                            value="{{$subject->end_date}}">
-                                    </div>
-                                    <div class="form-group">
                                         <label for="end-date-vertical">Numbers Sessions</label>
                                         <input type="number" id="end-date-vertical" class="form-control" name="class_sessions"
                                             value="{{$subject->class_sessions}}">

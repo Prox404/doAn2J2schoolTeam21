@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Classes;
+use App\Models\ClassWeekday;
 use App\Models\Schedules;
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
@@ -43,10 +44,15 @@ class SchedulesController extends Controller
                 return route('class.destroy', $object);
             })
             ->addColumn('autoSchedule', function ($object) {
-                if(isset($object->schedule()->where('subject_id', $object->subject_id)->first()->id)) {
-                    return 1;
+                if (isset($object->schedule()->where('class_id', $object->id)->first()->id)) {
+                    return [
+                        'status' => 1,
+                    ];
                 } else {
-                    return route('class.autoSchedule', $object);
+                    return [
+                        'status' => 404,
+                        'href' => route('class.autoSchedule', $object),
+                    ];
                 }
             })
             ->make(true);
@@ -62,7 +68,7 @@ class SchedulesController extends Controller
             ->orderBy('date', 'asc')
             ->paginate(10);
 
-        return view('schedules.edit',[
+        return view('schedules.edit', [
             'schedules' => $schedules,
         ]);
     }
@@ -84,7 +90,7 @@ class SchedulesController extends Controller
     {
         $date = new Carbon($request->date);
         $weekday_id = $date->dayOfWeek;
-        if($weekday_id == 0){
+        if ($weekday_id == 0) {
             $weekday_id = 7;
         }
 
