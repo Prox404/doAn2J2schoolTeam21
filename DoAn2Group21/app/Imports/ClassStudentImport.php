@@ -21,9 +21,9 @@ class ClassStudentImport implements ToModel, WithHeadingRow
 
     public function model(array $row)
     {
-        return new ClassStudent([
+        return ([
             'user_id' => $row['user_id'],
-            'class_id' => $row['class_id']
+            'name' => $row['name']
         ]);
     }
 }

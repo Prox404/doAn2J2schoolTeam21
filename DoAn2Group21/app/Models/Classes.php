@@ -12,7 +12,9 @@ class Classes extends Model
     public $timestamps = false; 
     
     protected $fillable = [	
-        'name',	
+        'name',
+        'weekdays',
+        'shift',	
         'subject_id',
     ];
 
@@ -28,5 +30,10 @@ class Classes extends Model
     public function subjects()
     {
         return $this->belongsTo('App\Models\Subjects', 'subject_id');
+    }
+
+    public function classStudent()
+    {
+        return $this->hasMany('App\Models\ClassStudent', 'user_id');
     }
 }

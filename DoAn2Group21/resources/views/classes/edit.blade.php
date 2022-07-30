@@ -14,7 +14,7 @@
     <div class="page-content">
         @if (session()->has('message'))
             <div class="alert alert-success">
-                {{ session()->get('message') }}
+                {{!! session()->get('message') !!}}
             </div>
         @endif
         <section class="row">
@@ -49,37 +49,37 @@
                                             <select id="weekday" name="weekday[]"
                                                 class="choices form-select multiple-remove" multiple="multiple">
                                                 <option value="1" 
-                                                    @if (isset($class->ClassWeekday()->where('weekday_id', 1)->first()->class_id))
+                                                    @if (in_array(1, $weekdays))
                                                         selected
                                                     @endif
                                                 >Thứ 2</option>
                                                 <option value="2"
-                                                    @if (isset($class->ClassWeekday()->where('weekday_id', 2)->first()->class_id))
+                                                    @if (in_array(2, $weekdays))
                                                         selected
                                                     @endif
                                                 >Thứ 3</option>
                                                 <option value="3"
-                                                    @if (isset($class->ClassWeekday()->where('weekday_id', 3)->first()->class_id))
+                                                    @if (in_array(3, $weekdays))
                                                         selected
                                                     @endif
                                                 >Thứ 4</option>
                                                 <option value="4" 
-                                                    @if (isset($class->ClassWeekday()->where('weekday_id', 4)->first()->class_id))
+                                                    @if (in_array(4, $weekdays))
                                                         selected
                                                     @endif
                                                 >Thứ 5</option>
                                                 <option value="5"
-                                                    @if (isset($class->ClassWeekday()->where('weekday_id', 5)->first()->class_id))
+                                                    @if (in_array(5, $weekdays))
                                                         selected
                                                     @endif
                                                 >Thứ 6</option>
                                                 <option value="6" 
-                                                    @if (isset($class->ClassWeekday()->where('weekday_id', 6)->first()->class_id))
+                                                    @if (in_array(6, $weekdays))
                                                         selected
                                                     @endif
                                                 >Thứ 7</option>
                                                 <option value="7"
-                                                    @if (isset($class->ClassWeekday()->where('weekday_id', 7)->first()->class_id))
+                                                    @if (in_array(7, $weekdays))
                                                         selected
                                                     @endif
                                                 >Chủ nhật</option>
@@ -127,7 +127,7 @@
                 <div class="card-body">
                     <div class="col-12 d-flex justify-content-start mb-3">
                         <div class="input-group">
-                            <form action="{{ route('classStudent.import') }}" method="POST" enctype="multipart/form-data" class="d-flex justify-content-start">
+                            <form action="{{ route('classStudent.import', $class->id) }}" method="POST" enctype="multipart/form-data" class="d-flex justify-content-start">
                                 @csrf
                                 <div class="input-group me-2">
                                     <label class="input-group-text" for="user-file"><i class="bi bi-upload"></i></label>

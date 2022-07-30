@@ -110,8 +110,6 @@ class ClassesController extends Controller
         $shift = $request->shift; 
         $teacher_id = $request->teacher;
 
-        // $number_weekday = count($weekdays);
-
         $teacher = ClassStudent::query()
             ->addSelect('users.id as id')
             ->leftJoin('users', 'class_students.user_id', 'users.id')
@@ -119,10 +117,13 @@ class ClassesController extends Controller
             ->where('users.level', 2)
             ->first();
 
+
+        // remove older teacher    
         if(!empty($teacher)){
             $current_teacher_id = $teacher->id;
             ClassStudent::where('user_id', $current_teacher_id)->delete();
         }
+        //create new teacher
         ClassStudent::create([
             'class_id' => $request->id,
             'user_id' => $teacher_id,
@@ -132,18 +133,10 @@ class ClassesController extends Controller
             'id' => $request->id,
         ], [
             'name' => $name,
-            'subject_id' => $subject_id
+            'subject_id' => $subject_id,
+            'shift' => $shift,
+            'weekdays' => $weekdays
         ]);
-
-        // ClassWeekday::where('class_id', $request->id)->delete();
-
-        // foreach ($weekdays as $weekday) {
-        //     ClassWeekday::create([
-        //         'class_id' => $request->id,
-        //         'shift' => $shift,
-        //         'weekday_id' => $weekday
-        //     ]);
-        // }
 
         return redirect()->route('class.index')->with('message', 'Success update ' . $name . ' !!!');
     }
@@ -159,9 +152,9 @@ class ClassesController extends Controller
         ]);
 
         $teacher = ClassStudent::query()
-            ->addSelect('users.id as teacher_id')
+            ->select('users.id as id', 'users.name as name')
             ->leftJoin('users', 'class_students.user_id', 'users.id')
-            ->where('class_students.class_id', $id)
+            ->where('class_id', $id )
             ->where('users.level', 2)
             ->first();
 
@@ -174,17 +167,17 @@ class ClassesController extends Controller
             ->where('level', 2)
             ->get();
 
-        // $weekdays = ClassWeekday::query()
-        //     ->addSelect('class_weekdays.*')
-        //     ->where('class_id', '=', $id);
+        $weekdays = $class->weekdays;
 
-        // return view('classes.edit', [
-        //     'class' => $class,
-        //     'current_teacher' => $teacher,
-        //     'teachers' => $teachers,
-        //     'subject' => $subject_data,
-        //     'weekdays' => $weekdays,
-        // ]);
+        return view('classes.edit', [
+            'class' => $class,
+            'current_teacher' => $teacher,
+            'teachers' => $teachers,
+            'subject' => $subject_data,
+            'weekdays' => $weekdays,
+        ]);
+
+        // return $teacher;
     }
 
     public function userApi($id)
@@ -193,7 +186,9 @@ class ClassesController extends Controller
             ->select('class_students.class_id')
             ->addSelect('users.id', 'users.name')
             ->leftJoin('users', 'users.id', 'user_id')
-            ->where('class_id', '=', $id);
+            ->where('class_id', '=', $id)
+            ->where('users.level', 1)
+            ->get();
         return DataTables::of($query)
             ->addColumn('edit', function ($object) {
                 return route('user.edit', $object);
@@ -212,10 +207,6 @@ class ClassesController extends Controller
 
     public function store(Request $request)
     {
-        // $object = new Classes();
-        // $object->fill($request->validated());
-        // $object->save();
-
         $name = $request->name;
         $subject_id = $request->subject;
         $weekdays = $_POST['weekday'];
@@ -227,10 +218,7 @@ class ClassesController extends Controller
         $class->weekdays = $weekdays;
         $class->shift = $shift;
         $class->save();
-        // $insertedId = $class->id;s
 
-        // return $weekdays;
-        // return $insertedId;
         return redirect()->route('class.index')->with('message', 'Success add ' . $name . ' !!!');
     }
 
