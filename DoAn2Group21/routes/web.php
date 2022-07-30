@@ -82,6 +82,6 @@ Route::group(['prefix'=>'schedules', 'as' => 'schedule.'], function (){
 });
 
 Route::group(['prefix'=>'classStudent', 'as' => 'classStudent.'], function (){
-    Route::post('import/classStudent', [\App\Http\Controllers\ClassStudentController::class,'import'])->name('import');
+    Route::post('/import/{id}', [\App\Http\Controllers\ClassStudentController::class,'import'])->name('import');
     Route::delete('/destroy/{id}', [\App\Http\Controllers\ClassStudentController::class,'destroy'])->name('destroy');
 });
