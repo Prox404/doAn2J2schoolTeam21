@@ -16,4 +16,9 @@ class Schedules extends Model
     ];
 
     public $timestamps = false;
+
+    public function classes()
+    {
+        return $this->belongsTo('App\Models\Classes', 'class_id');
+    }
 }

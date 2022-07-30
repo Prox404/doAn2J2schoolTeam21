@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="{{ asset('vendors/choices.js/choices.min.css') }}" />
     {{-- css end --}}
 @endpush
+@php
+use Illuminate\Support\Carbon;
+@endphp
 @section('content')
     <div class="page-content">
         @if (session()->has('message'))
@@ -26,7 +29,10 @@
                             <div class="row justify-content-center">
                                 <div class="col-md-2 d-flex justify-content-end align-self-baseline">
                                     <span class="text-secondary mb-2 float-right">
-                                        @switch($schedule->weekday_id)
+                                        @php
+                                            $date = new Carbon($schedule->date);
+                                        @endphp
+                                        @switch($date->isoFormat('E'))
                                             @case(1)
                                                 {{ 'Thứ hai, ' . $schedule->date }}
                                             @break
@@ -85,8 +91,7 @@
                                                 <button value="{{ $schedule->id }}" class="btn btn-light btn-edit me-2">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
-                                                <form action="{{ route('schedule.destroy', $schedule) }}"
-                                                    method="POST">
+                                                <form action="{{ route('schedule.destroy', $schedule) }}" method="POST">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="btn btn-light">
