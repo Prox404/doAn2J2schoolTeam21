@@ -53,7 +53,7 @@
                                         <td>{{ $student->id }}</td>
                                         <td>{{ $student->name }}</td>
                                         <td align="right">
-                                            @if(isset($student->attendance()->where('date',$schedules->date)->first()->user_id))
+                                            @if(isset($student->attendance()->where('schedule_id',$schedules->id)->first()->user_id))
                                                 <label class="block text-gray-500 font-semibold sm:border-r sm:pr-4">
                                                     <input name="attendance[{{ $student->id }}]" class="leading-tight"
                                                         type="radio" value="1" checked>
@@ -62,13 +62,13 @@
                                                 <label class="ml-4 block text-gray-500 font-semibold">
                                                     <input name="attendance[{{ $student->id }}]" class="leading-tight"
                                                         type="radio" value="2"
-                                                        {{ $student->attendance()->where('date', $schedules->date)->first()->status == 2 ? 'checked' : '' }}>
+                                                        {{ $student->attendance()->where('schedule_id', $schedules->id)->first()->status == 2 ? 'checked' : '' }}>
                                                     <span class="text-danger">Vắng</span>
                                                 </label>
                                                 <label class="ml-4 block text-gray-500 font-semibold">
                                                     <input name="attendance[{{ $student->id }}]" class="leading-tight"
                                                         type="radio" value="3"
-                                                        {{ $student->attendance()->where('date', $schedules->date)->first()->status == 3 ? 'checked' : '' }}>
+                                                        {{ $student->attendance()->where('schedule_id', $schedules->id)->first()->status == 3 ? 'checked' : '' }}>
                                                     <span class="text-success">Phép</span>
                                                 </label>
             

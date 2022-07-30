@@ -55,12 +55,9 @@ class AttendanceController extends Controller
 
     public function history(Classes $class)
     {
-        $class_sessions = Schedules::query()
-            ->addSelect('schedules.*')
-            ->where('subject_id', '=', $class->subject_id)
-            ->get();
+        $schedules = Schedules::with('classes')->where('class_id', $class->id)->get();
         return view('attendance.history')
-        ->with('class_sessions', $class_sessions)
+        ->with('schedules', $schedules)
         ->with('class', $class);
     }
 
@@ -72,14 +69,14 @@ class AttendanceController extends Controller
             ->leftJoin('users', 'class_students.user_id', 'users.id')
             ->where('class_id', '=', $class_id)
             ->get();
-        $schedules = Schedules::query()
-            ->addSelect('schedules.*')
-            ->where('id', '=', $schedule_id)
-            ->first();
+        $schedules = Schedules::find($schedule_id);
+        
         return view('attendance.attendance')
         ->with('students', $students)
         ->with('schedules', $schedules)
         ->with('class_id', $class_id);
+
+        // return $schedules;
     }
 
     public function store(Request $request)
@@ -87,31 +84,22 @@ class AttendanceController extends Controller
         try {
             $schedule_id = $request->schedule_id;
             $class_id = $request->class_id;
-            $date = $request->date;
-            $date = date('Y-m-d', strtotime($date));
             foreach ($request->attendance as $key => $value) {
-                $find = Attendance::query()
-                    ->addSelect('attendance.*')
-                    ->where('user_id', $key)
+                $find = Attendance::where('user_id', $key)
                     ->where('schedule_id', $schedule_id)
-                    ->where('class_id', $class_id)
                     ->count();
 
                 if($find >= 1){
                     Attendance::where('user_id', $key)
                     ->where('schedule_id', $schedule_id)
-                    ->where('class_id', $class_id)
                     ->update([
                         'status' => $value,
-                        'date' => $date,
                     ]);
                 }else{
                     Attendance::Create([
-                        'class_id' => $class_id,
                         'user_id'=> $key,
                         'schedule_id'=> $schedule_id,
                         'status' => $value,
-                        'date' => $date,
                     ]);
                 }
             }
