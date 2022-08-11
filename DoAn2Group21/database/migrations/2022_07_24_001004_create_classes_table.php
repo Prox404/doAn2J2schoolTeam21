@@ -17,8 +17,8 @@ class CreateClassesTable extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->bigInteger('subject_id');
-            $table->tinyInteger('shift');
-            $table->json('weekdays');
+            $table->tinyInteger('shift')->nullable();
+            $table->json('weekdays')->nullable();
             // $table->timestamps();
         });
     }

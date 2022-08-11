@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Classes;
+namespace App\Http\Requests\User;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -23,10 +23,12 @@ class StoreRequest extends FormRequest
      */
     public function rules()
     {
+        $current_user_level = session('level');
         return [
             'name' => 'required|string|max:255',
-            'shift' => 'required|integer',
-            'subject' => 'required|integer',
+            'email' => 'required|email|unique:users,email',
+            'level' => 'required|lte:'.$current_user_level,
+            'birthday' => 'required|date',
         ];
     }
 }

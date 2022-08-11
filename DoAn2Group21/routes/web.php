@@ -37,6 +37,7 @@ Route::group([
     Route::delete('/destroy/{user}', [\App\Http\Controllers\UsersController::class,'destroy'])->name('destroy');
     Route::post('import/user', [\App\Http\Controllers\UsersController::class,'import'])->name('import');
     Route::post('advancedImport/', [\App\Http\Controllers\UsersController::class,'advancedImport'])->name('advancedImport');
+    Route::post('/create', [\App\Http\Controllers\UsersController::class,'store'])->name('store');
 });
 
 Route::group(['prefix'=>'subjects', 'as' => 'subject.'], function (){

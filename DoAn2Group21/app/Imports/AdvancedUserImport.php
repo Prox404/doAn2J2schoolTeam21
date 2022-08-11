@@ -23,7 +23,8 @@ class AdvancedUserImport implements ToCollection, WithHeadingRow
         return ([
             'name' => $row['name'],
             'email' => $row['email'],
-            'password' => Hash::make($row['password']),
+            'birthday' => $row['birthday'],
+            'password' => Hash::make($row['birthday']),
             'level' => 1,
             'subject' =>  $row['subject'],
         ]);

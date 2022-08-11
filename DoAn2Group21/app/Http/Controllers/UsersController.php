@@ -9,8 +9,10 @@ use App\Models\Subjects;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel as Excel;
 use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\User\StoreRequest;
 use App\Models\Classes;
 use App\Models\ClassStudent;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View as View;
 use Yajra\DataTables\DataTables;
@@ -57,10 +59,41 @@ class UsersController extends Controller
             ->make(true);
     }
 
+    public function excelToDateTime($value)
+    {
+        $UNIX_DATE = ($value- 25569) * 86400;
+        return gmdate("Y-m-d", $UNIX_DATE);
+    }
+
     public function import()
     {
         try {
-            $import = Excel::import(new UsersImport, request()->file('user_file'));
+
+            if (!empty($_SESSION['id'])) {
+                $user_id = $_SESSION['id'];
+            } else {
+                $user_id = 0;
+            }
+
+            $import = Excel::toArray(new UsersImport, request()->file('user_file'));
+            $import = $import[0];
+            foreach ($import as $user){
+                if(isset($user['email']) && isset($user['name']) && isset($user['birthday'])){
+                    $birthday = $this->excelToDateTime($user['birthday']);
+                    User::updateOrCreate(
+                        [
+                            'email' => $user['email'],
+                        ],
+                        [
+                            'name' => $user['name'],
+                            'level' => 1,
+                            'birthday' => $birthday,
+                            'password' => bcrypt($birthday),
+                            'added_by' => $user_id,
+                        ]
+                    );
+                }
+            }
             return redirect()->back()->with('message', 'Success!!!');
         } catch (\Exception $e) {
             return redirect()->back()->with('message', "File lỗi, vui lòng kiểm tra file !!");
@@ -72,15 +105,6 @@ class UsersController extends Controller
         foreach ($object as $key => $value) {
             if ($value->name == $name)
                 return $value->id;
-        }
-        return 0;
-    }
-
-    public function getClassSessionByName($object, $name)
-    {
-        foreach ($object as $key => $value) {
-            if ($value->name == $name)
-                return $value->class_sessions;
         }
         return 0;
     }
@@ -105,29 +129,24 @@ class UsersController extends Controller
                 ]
             );
 
-            // $current_class = "none";
-
             foreach ($import as $data) {
 
                 $isValid = $this->getIdByName($subjects, $data['subject']);
 
-                $current_class =  Classes::query()
-                    ->addSelect('classes.*')
-                    ->where('name', 'like', $data['subject'] . '%')
+                $current_class =  Classes::where('name', 'like', $data['subject'] . '%')
                     ->orderBy('id', 'desc')
                     ->first();
 
                 if (!empty($current_class)) {
 
-                    $numberStudent = ClassStudent::query()
-                        ->addSelect('class_students.*')
-                        ->where('class_id', $current_class->id)
+                    $numberStudent = ClassStudent::where('class_id', $current_class->id)
                         ->get()
                         ->count();
 
                     if ($isValid != 0) {
-                        $class_sessions = $this->getClassSessionByName($subjects, $data['subject']);
-                        if ($numberStudent < $class_sessions) {
+                        $numberOfStudentPerClass = 15;
+                        $user_birthday = $this->excelToDateTime($data['birthday']);
+                        if ($numberStudent < $numberOfStudentPerClass) {
                             $user = User::updateOrCreate(
                                 [
                                     'email' => $data['email'],
@@ -135,7 +154,8 @@ class UsersController extends Controller
                                 [
                                     'name' => $data['name'],
                                     'level' => 1,
-                                    'password' => bcrypt($data['password']),
+                                    'birthday' => $user_birthday,
+                                    'password' => bcrypt($user_birthday),
                                     'added_by' => $user_id,
                                 ]
                             );
@@ -160,7 +180,8 @@ class UsersController extends Controller
                                 [
                                     'name' => $data['name'],
                                     'level' => 1,
-                                    'password' => bcrypt($data['password']),
+                                    'birthday' => $user_birthday,
+                                    'password' => bcrypt($user_birthday),
                                     'added_by' => $user_id,
                                 ]
                             );
@@ -172,6 +193,7 @@ class UsersController extends Controller
                     }
                 } else {
                     if ($isValid != 0) {
+                        $user_birthday = $this->excelToDateTime($data['birthday']);
                         $ClassName = $data['subject'] . '1';
                         $classes = Classes::create(
                             [
@@ -187,7 +209,8 @@ class UsersController extends Controller
                             [
                                 'name' => $data['name'],
                                 'level' => 1,
-                                'password' => bcrypt($data['password']),
+                                'birthday' => $user_birthday,
+                                'password' => bcrypt($user_birthday),
                                 'added_by' => $user_id,
                             ]
                         );
@@ -197,8 +220,9 @@ class UsersController extends Controller
                         ]);
                     }
                 }
+                
             }
-
+            // return $import;
             return redirect()->back()->with('message', 'Success!!!');
         } catch (\Exception $e) {
             return redirect()->back()->with('message', "File lỗi, vui lòng kiểm tra file !!" . $e->getMessage());
@@ -216,6 +240,16 @@ class UsersController extends Controller
     public function edit(User $user)
     {
         return view('users.edit')->with('user', $user);
+    }
+
+    public function store(StoreRequest $request)
+    {
+        $added_by = session('id');
+        $user = $request->validated();
+        $user['password'] = bcrypt($user['birthday']);
+        $user['added_by'] = $added_by;
+        User::create($user);
+        return redirect()->route('user.index')->with('message', 'Success!!!');
     }
 
     public function destroy(User $user)

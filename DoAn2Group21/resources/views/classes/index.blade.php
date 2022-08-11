@@ -17,6 +17,7 @@
                 {{ session()->get('message') }}
             </div>
         @endif
+ 
         <section class="row">
             <div class="card">
                 <div class="card-header">
@@ -26,20 +27,10 @@
                     <div class="col-12 d-flex justify-content-start mb-3">
                         <a href="#" type="button" class="btn btn-success me-1 " data-bs-toggle="modal"
                             data-bs-target="#addSubjectModal">Thêm lớp học</a>
+                        <button type="button" class="btn btn-success me-1 " data-bs-toggle="modal"
+                            data-bs-target="#auto-upload-class">Tải lên lớp học</button>
 
-                        <div class="input-group" style="width:40%;">
-                            <form action="{{ route('user.advancedImport') }}" method="POST" enctype="multipart/form-data"
-                                class="d-flex justify-content-start">
-                                @csrf
-                                <div class="input-group me-2">
-                                    <input type="file" class="form-control" id="user-file" name="user_file"
-                                        accept=".xlsx, .xls, .csv, .ods">
-                                
-                                <button type="submit" class="btn btn-info"
-                                    OnClick="return confirm('Are u sủe ?')">Import</button>
-                                </div>
-                            </form>
-                        </div>
+                        
                     </div>
 
                     <table id="basic-datatable" class="table dt-responsive nowrap w-100">
@@ -47,6 +38,8 @@
                             <tr>
                                 <th>Class Name</th>
                                 <th>Subject Name</th>
+                                <th>Buổi học</th>
+                                <th>Ca</th>
                                 <th>Teacher</th>
                                 <th>Edit</th>
                                 <th>Destroy</th>
@@ -68,7 +61,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Thêm lớp</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -79,12 +72,13 @@
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label for="name-vertical">Class Name</label>
-                                        <input type="text" id="name-vertical" class="form-control" name="name"
+                                        <input type="text" id="class-name" class="form-control" name="name"
                                             placeholder="Class Name">
                                     </div>
                                     <div class="form-group">
                                         <label for="subject">Môn học</label>
                                         <select class="choices form-select" id="subject" name="subject">
+                                            <option placeholder>Chưa có môn học</option>
                                             @foreach ($subject as $data)
                                                 <option value="{{ $data->id }}">{{ $data->name }}</option>
                                             @endforeach
@@ -94,6 +88,7 @@
                                         <label for="weekday">Buổi học</label>
                                         <select id="weekday" name="weekday[]" class="choices form-select multiple-remove"
                                             multiple="multiple">
+                                            <option placeholder>Chưa có buổi học</option>
                                             <option value="1">Thứ 2</option>
                                             <option value="2">Thứ 3</option>
                                             <option value="3">Thứ 4</option>
@@ -106,18 +101,57 @@
                                     <div class="form-group">
                                         <label for="shift">Ca</label>
                                         <select class="choices form-select" id="shift" name="shift">
+                                            <option placeholder>Chưa có ca</option>
                                             <option value="1">Sáng</option>
                                             <option value="2">Chiều</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-12 d-flex justify-content-end">
-                                    <button type="submit" class="btn btn-primary me-1 mb-1">Submit</button>
+                                    <button type="submit" onclick="return validate()" class="btn btn-primary me-1 mb-1">Submit</button>
                                     <button type="reset" class="btn btn-light-secondary me-1 mb-1">Reset</button>
                                 </div>
                             </div>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade text-left modal-borderless" id="auto-upload-class" tabindex="-1" role="dialog"
+        aria-labelledby="myModalLabel1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Thêm lớp tự động</h5>
+                    <button type="button" class="close rounded-pill" data-bs-dismiss="modal" aria-label="Close">
+                        <i data-feather="x"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <center>
+                        <a href="{{asset('files/excel/auto-upload-class-example.xlsx')}}" class="btn btn-primary mb-5">Tải file mẫu</a>
+                        <img class="mx-auto w-32 mb-5" src="https://user-images.githubusercontent.com/507615/54591670-ac0a0180-4a65-11e9-846c-e55ffce0fe7b.png" alt="no data" />
+                        <div class="input-group mb-3 d-flex justify-content-center">
+                            <form action="{{ route('user.advancedImport') }}" method="POST" enctype="multipart/form-data">
+                                @csrf
+                                <div class="input-group me-2">
+                                    <input type="file" class="form-control" id="user-file" name="user_file"
+                                        accept=".xlsx, .xls, .csv, .ods">
+
+                                    <button type="submit" class="btn btn-info"
+                                        OnClick="return confirm('Are u sủe ?')">Import</button>
+                                </div>
+                            </form>
+                        </div>
+                    </center>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-primary" data-bs-dismiss="modal">
+                        <i class="bx bx-x d-block d-sm-none"></i>
+                        <span class="d-none d-sm-block">Close</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -144,6 +178,14 @@
                     {
                         data: 'subject_name',
                         name: 'subject_name'
+                    },
+                    {
+                        data: 'weekdays',
+                        name: 'weekdays'
+                    },
+                    {
+                        data: 'shift',
+                        name: 'shift'
                     },
                     {
                         data: 'teacher',
@@ -191,6 +233,30 @@
             });
 
         });
+    </script>
+    <script>
+        function validate() {
+            $className = $('#class-name').val();
+            $subject = $('#subject').val();
+            $weekdays = $('#weekday').val();
+            $shift = $('#shift').val();
+
+            if ($className == '') {
+                alert('Bạn chưa nhập tên lớp');
+                return false;
+            } else if ($subject == '' || $subject == 'Chưa có môn học') {
+                alert('Bạn chưa chọn môn học');
+                return false;
+            } else if ($weekdays == '' || $weekdays == 'Chưa có buổi học') {
+                alert('Bạn chưa chọn buổi học');
+                return false;
+            } else if ($shift == '' || $shift == 'Chưa có ca') {
+                alert('Bạn chưa chọn ca học');
+                return false;
+            } else {
+                return true;
+            }
+        }
     </script>
     {{-- js end --}}
 @endpush

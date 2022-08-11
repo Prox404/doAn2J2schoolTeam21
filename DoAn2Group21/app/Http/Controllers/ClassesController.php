@@ -51,6 +51,50 @@ class ClassesController extends Controller
             ->leftJoin('subjects', 'classes.subject_id', 'subjects.id');
 
         return DataTables::of($query)
+            ->editColumn('weekdays', function ($object) {
+                if(!empty($object->weekdays)) {
+                    $weekdayName = [];
+                    foreach($object->weekdays as $weekday) {
+                        switch($weekday){
+                            case 1:
+                                $weekdayName[] = 'T2';
+                                break;
+                            case 2:
+                                $weekdayName[] = 'T3';
+                                break;
+                            case 3:
+                                $weekdayName[] = 'T4';
+                                break;
+                            case 4:
+                                $weekdayName[] = 'T5';
+                                break;
+                            case 5:
+                                $weekdayName[] = 'T6';
+                                break;
+                            case 6:
+                                $weekdayName[] = 'T7';
+                                break;
+                            case 7:
+                                $weekdayName[] = 'CN';
+                                break;
+                        }
+                    }
+                    return implode(', ', $weekdayName);
+                }else {
+                    return 'Chưa cập nhật';
+                }
+            })
+            ->editColumn('shift', function ($object) {
+                if(!empty($object->shift)) {
+                    if($object->shift == 1) {
+                        return 'Sáng';
+                    }else {
+                        return 'Chiều';
+                    }
+                }else{
+                    return 'Chưa cập nhật';
+                }
+            })
             ->addColumn('teacher', function ($object) {
                 $teacher = ClassStudent::query()
                     ->addSelect('users.name as teacher')
@@ -132,8 +176,6 @@ class ClassesController extends Controller
         Classes::updateOrCreate([
             'id' => $request->id,
         ], [
-            'name' => $name,
-            'subject_id' => $subject_id,
             'shift' => $shift,
             'weekdays' => $weekdays
         ]);
@@ -190,9 +232,6 @@ class ClassesController extends Controller
             ->where('users.level', 1)
             ->get();
         return DataTables::of($query)
-            ->addColumn('edit', function ($object) {
-                return route('user.edit', $object);
-            })
             ->addColumn('destroy', function ($object) {
                 return route('classStudent.destroy', $object);
             })
