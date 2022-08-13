@@ -69,6 +69,10 @@ use Illuminate\Support\Carbon;
                             @endswitch
 
                             {{$schedule->date}}
+
+                            @if(!isset($schedule->attendance()->where('schedule_id', $schedule->id)->first()->status))
+                                <i title="Chưa điểm danh" class="fas fa-info-circle"></i>
+                            @endif
                         </a>
                         <button type="button" class="btn"><i class="icon dripicons-cross"></i></button>
                     </div>

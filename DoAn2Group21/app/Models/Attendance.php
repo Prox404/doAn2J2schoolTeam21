@@ -17,4 +17,9 @@ class Attendance extends Model
     ];
 
     public $timestamps = false;
+
+    public function schedule()
+    {
+        return $this->belongsTo('App\Models\Attendance', 'schedule_id');
+    }
 }

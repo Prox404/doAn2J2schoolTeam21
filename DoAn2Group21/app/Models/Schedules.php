@@ -21,4 +21,9 @@ class Schedules extends Model
     {
         return $this->belongsTo('App\Models\Classes', 'class_id');
     }
+
+    public function attendance()
+    {
+        return $this->hasOne('App\Models\Attendance', 'schedule_id');
+    }
 }

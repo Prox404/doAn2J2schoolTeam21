@@ -88,9 +88,6 @@ use Illuminate\Support\Carbon;
                                         </div>
                                         <div class="col-md-2 mt-2">
                                             <div class="d-flex justify-content-end">
-                                                <button value="{{ $schedule->id }}" class="btn btn-light btn-edit me-2">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
                                                 <form action="{{ route('schedule.destroy', $schedule) }}" method="POST">
                                                     @csrf
                                                     @method('DELETE')
@@ -114,49 +111,6 @@ use Illuminate\Support\Carbon;
 
             </div>
         </section>
-
-        <div class="modal fade text-left modal-borderless" id="editModal" tabindex="-1" role="dialog"
-            aria-labelledby="myModalLabel1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-scrollable" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Chỉnh sửa lịch</h5>
-                        <button type="button" class="close rounded-pill" data-bs-dismiss="modal" aria-label="Close">
-                            <i data-feather="x"></i>
-                        </button>
-                    </div>
-                    <form action="{{ route('schedule.update') }}" method="post">
-                        @csrf
-                        @method('PUT')
-                        <div class="modal-body">
-                            <div class="form-group">
-                                <label for="basicInput">Ngày</label>
-                                <input type="date" class="form-control" id="date" name="date">
-                            </div>
-                            <div class="form-group">
-                                <label for="shift">Ca</label>
-                                <select class="form-select" id="shift" name="shift">
-                                    <option value="1">Sáng</option>
-                                    <option value="2">Chiều</option>
-                                </select>
-                            </div>
-                            <input type="hidden" name="id" id="id">
-                            <input type="hidden" name="class_id" id="class_id">
-
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-light-primary" data-bs-dismiss="modal">
-                                <i class="bx bx-x d-block d-sm-none"></i>
-                                <span class="d-none d-sm-block">Close</span>
-                            </button>
-                            <button type="submit" class="btn btn-primary ml-1">
-                                <span>Accept</span>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
     </div>
 @stop
 @push('js')

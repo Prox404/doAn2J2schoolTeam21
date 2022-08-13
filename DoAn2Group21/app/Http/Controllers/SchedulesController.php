@@ -3,10 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Classes;
-use App\Models\ClassWeekday;
+use App\Models\ClassStudent;
 use App\Models\Schedules;
 use Carbon\Carbon;
-use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
@@ -26,6 +25,31 @@ class SchedulesController extends Controller
 
     public function index()
     {
+        if(auth()->user()->level == 1 || auth()->user()->level == 2){
+            $id = auth()->user()->id;
+
+            $class = ClassStudent::where('user_id', $id)
+            ->groupBy('class_id')
+            ->get();
+
+            $schedules = [];
+
+            foreach($class as $item) {
+                $schedules[] = Schedules::where('class_id', $item->class_id)
+                ->addSelect('classes.*')
+                ->addSelect('schedules.*')
+                ->leftJoin('classes', 'schedules.class_id', 'classes.id')
+                ->get();
+            }
+
+            $schedules = collect($schedules)->collapse();
+            
+            return view('schedules.index', [
+                'schedules' => $schedules,
+            ]);
+
+            // return $schedules;
+        }
         return view('schedules.index');
     }
 
@@ -88,20 +112,7 @@ class SchedulesController extends Controller
 
     public function update(Request $request)
     {
-        $date = new Carbon($request->date);
-        $weekday_id = $date->dayOfWeek;
-        if ($weekday_id == 0) {
-            $weekday_id = 7;
-        }
 
-        Schedules::updateOrCreate([
-            'id' => $request->id,
-        ], [
-            'shift' => $request->shift,
-            'weekday_id' => $weekday_id,
-            'date' => $request->date,
-        ]);
-
-        return redirect()->route('schedule.edit', $request->class_id)->with('message', 'Success update !!!');
+        return redirect()->route('schedule.edit')->with('message', 'Success update !!!');
     }
 }
