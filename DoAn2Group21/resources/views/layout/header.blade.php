@@ -39,13 +39,13 @@
                             <div class="user-name text-end me-3">
                                 <h6 class="mb-0 text-gray-600">
                                     @auth
-                                        {{session('name')}}
+                                        {{auth()->user()->name}}
                                     @endauth
                                 </h6>
                                 <p class="mb-0 text-sm text-gray-600">
                                     @auth
                                         <?php
-                                            switch(session('level')){
+                                            switch(auth()->user()->level){
                                                 case 1:
                                                     echo 'Student';
                                                     break;

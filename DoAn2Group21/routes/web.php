@@ -28,7 +28,7 @@ Route::get('signout', [AuthController::class, 'signOut'])->name('signout');
 Route::group([
     'prefix'=>'users', 
     'as' => 'user.',
-    // 'middleware' => 'requiredLogin'
+    'middleware' => 'requiredLogin',
 ], function (){
     Route::get('/', [\App\Http\Controllers\UsersController::class,'index'])->name('index');
     Route::get('api', [\App\Http\Controllers\UsersController::class,'api'])->name('api');
@@ -40,7 +40,11 @@ Route::group([
     Route::post('/create', [\App\Http\Controllers\UsersController::class,'store'])->name('store');
 });
 
-Route::group(['prefix'=>'subjects', 'as' => 'subject.'], function (){
+Route::group([
+    'prefix'=>'subjects', 
+    'as' => 'subject.',
+    'middleware' => 'isFromAdminToSuperAdmin',
+], function (){
     Route::get('/', [\App\Http\Controllers\SubjectsController::class,'index'])->name('index');
     Route::get('api', [\App\Http\Controllers\SubjectsController::class,'api'])->name('api');
     Route::get('edit/{subject}', [\App\Http\Controllers\SubjectsController::class,'edit'])->name('edit');
@@ -49,7 +53,11 @@ Route::group(['prefix'=>'subjects', 'as' => 'subject.'], function (){
     Route::post('/create', [\App\Http\Controllers\SubjectsController::class,'store'])->name('store');
 });
 
-Route::group(['prefix'=>'classes', 'as' => 'class.'], function (){
+Route::group([
+    'prefix'=>'classes', 
+    'as' => 'class.',
+    'middleware' => 'isFromTeacherToSuperAdmin',
+], function (){
     Route::get('/', [\App\Http\Controllers\ClassesController::class,'index'])->name('index');
     Route::get('test', [\App\Http\Controllers\ClassesController::class,'test'])->name('test');
     Route::get('api', [\App\Http\Controllers\ClassesController::class,'api'])->name('api');
@@ -63,7 +71,11 @@ Route::group(['prefix'=>'classes', 'as' => 'class.'], function (){
     Route::post('/create', [\App\Http\Controllers\ClassesController::class,'store'])->name('store');
 });
 
-Route::group(['prefix'=>'attendance', 'as' => 'attendance.'], function (){
+Route::group([
+    'prefix'=>'attendance', 
+    'as' => 'attendance.',
+    'middleware' => 'isFromTeacherToSuperAdmin',
+], function (){
     Route::get('/', [\App\Http\Controllers\AttendanceController::class,'index'])->name('index');
     Route::get('api', [\App\Http\Controllers\AttendanceController::class,'api'])->name('api');
     Route::get('history/{class}', [\App\Http\Controllers\AttendanceController::class,'history'])->name('history');
@@ -73,7 +85,11 @@ Route::group(['prefix'=>'attendance', 'as' => 'attendance.'], function (){
 
 });
 
-Route::group(['prefix'=>'schedules', 'as' => 'schedule.'], function (){
+Route::group([
+    'prefix'=>'schedules', 
+    'as' => 'schedule.',
+    'middleware' => 'requiredLogin',
+], function (){
     Route::get('/', [\App\Http\Controllers\SchedulesController::class,'index'])->name('index');
     Route::get('classApi', [\App\Http\Controllers\SchedulesController::class,'classApi'])->name('classApi');
     Route::get('edit/{class}', [\App\Http\Controllers\SchedulesController::class,'edit'])->name('edit');
@@ -82,7 +98,11 @@ Route::group(['prefix'=>'schedules', 'as' => 'schedule.'], function (){
     Route::put('update', [\App\Http\Controllers\SchedulesController::class,'update'])->name('update');
 });
 
-Route::group(['prefix'=>'classStudent', 'as' => 'classStudent.'], function (){
+Route::group([
+    'prefix'=>'classStudent', 
+    'as' => 'classStudent.',
+    'middleware' => 'isFromTeacherToSuperAdmin',
+], function (){
     Route::post('/import/{id}', [\App\Http\Controllers\ClassStudentController::class,'import'])->name('import');
     Route::delete('/destroy/{id}', [\App\Http\Controllers\ClassStudentController::class,'destroy'])->name('destroy');
 });

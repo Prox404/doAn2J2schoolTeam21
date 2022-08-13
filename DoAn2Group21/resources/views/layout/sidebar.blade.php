@@ -20,37 +20,46 @@
                         <span>Dashboard</span>
                     </a>
                 </li>
-                <li class="sidebar-item {{'classes' == request()->path() ? 'active' : ''}}">
-                    <a href="{{route('class.index')}}" class='sidebar-link'>
-                        <i class="bi bi-grid-fill"></i>
-                        <span>Classes</span>
-                    </a>
-                </li>
-                <li class="sidebar-item {{'users' == request()->path() ? 'active' : ''}}">
-                    <a href="{{route('user.index')}}" class='sidebar-link'>
-                        <i class="bi bi-grid-fill"></i>
-                        <span>Users</span>
-                    </a>
-                </li>
+                @if ( auth()->user()->level == 3 || auth()->user()->level == 4)        
+                    <li class="sidebar-item {{'users' == request()->path() ? 'active' : ''}}">
+                        <a href="{{route('user.index')}}" class='sidebar-link'>
+                            <i class="fas fa-users"></i>
+                            <span>Users</span>
+                        </a>
+                    </li>
+                @endif
+                @if ( auth()->user()->level == 3 || auth()->user()->level == 4)  
+                    <li class="sidebar-item {{'classes' == request()->path() ? 'active' : ''}}">
+                        <a href="{{route('class.index')}}" class='sidebar-link'>
+                            <i class="fas fa-graduation-cap"></i>
+                            <span>Classes</span>
+                        </a>
+                    </li>
+                @endif
+                @if ( auth()->user()->level == 3 || auth()->user()->level == 4)  
                 <li class="sidebar-item {{'subjects' == request()->path() ? 'active' : ''}}">
                     <a href="{{route('subject.index')}}" class='sidebar-link'>
-                        <i class="bi bi-grid-fill"></i>
+                        <i class="fas fa-book"></i>
                         <span>Subjects</span>
                     </a>
                 </li>
+                @endif
+
                 <li class="sidebar-item {{'schedules' == request()->path() ? 'active' : ''}} ">
                     <a href="{{route('schedule.index')}}" class='sidebar-link'>
-                        <i class="bi bi-grid-fill"></i>
+                        <i class="fas fa-calendar"></i>
                         <span>Schedules</span>
                     </a>
                 </li>
+
+                @if ( auth()->user()->level == 3 || auth()->user()->level == 2 || auth()->user()->level == 4)
                 <li class="sidebar-item {{'attendance' == request()->path() ? 'active' : ''}} ">
                     <a href="{{route('attendance.index')}}" class='sidebar-link'>
-                        <i class="bi bi-grid-fill"></i>
+                        <i class="fas fa-calendar"></i>
                         <span>Attendance</span>
                     </a>
                 </li>
-
+                @endif
             </ul>
         </div>
         <button class="sidebar-toggler btn x"><i data-feather="x"></i></button>
