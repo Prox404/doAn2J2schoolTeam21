@@ -53,12 +53,142 @@ class AttendanceController extends Controller
         ->make(true);
     }
 
+    public function findValueById($object, $id, $id_field, $field)
+    {
+        foreach ($object as $key => $value) {
+            if ($value->$id_field == $id) {
+                return $value->$field;
+            }
+        }
+    }
+
     public function history(Classes $class)
     {
         $schedules = Schedules::with('classes')->where('class_id', $class->id)->get();
+        
+        $schedule_id = [];
+        foreach ($schedules as $key => $value) {
+            $schedule_id[] = $value->id;
+        }
+
+        $attendance = Attendance::query()
+            ->addSelect('attendances.*')
+            ->addSelect('users.name as name')
+            ->leftJoin('users', 'attendances.user_id', 'users.id')
+            ->whereIn('schedule_id', $schedule_id)
+            ->get();
+
+        
+        $all_students = [];
+        $students_absent = [];
+        $students_present = [];
+        $attendances = [];
+        foreach ($attendance as $key => $value) {
+            if ($value->status == 2) {
+                $students_absent[] = $value->user_id;
+            }
+            if ($value->status == 1) {
+                $students_present[] = $value->user_id;
+            }
+            $all_students[$value->user_id] = $value->name;
+            $attendances[$value->schedule_id][] = $value->status;
+        }
+
+        $students_absent = array_count_values($students_absent);
+        $students_present = array_count_values($students_present);
+
+        $students_absent_array = [];
+        
+        foreach ($students_absent as $key => $value) {
+            if($value > 3){
+                $students_absent_array[] = [
+                    'id' => $key,
+                    'name' => $this->findValueById($attendance, $key, 'user_id', 'name'),
+                    'absent' => $value,
+                ];
+            }
+        }
+        $students_present_array = [];
+        foreach ($students_present as $key => $value) {
+            if($value == count($attendances)){
+                $students_present_array[] = [
+                    'id' => $key,
+                    'name' => $this->findValueById($attendance, $key, 'user_id', 'name'),
+                    'present' => $value,
+                ];
+            }
+        }
+
+        $attendances_data = [];
+        foreach ($attendances as $key => $value) {
+            $date = $this->findValueById($schedules, $key, 'id', 'date');
+            $attendances_data[$date] = array_count_values($value);
+        }
+
+
+        $line_chart_labels = [];
+        foreach($schedules as $schedule) {
+            $line_chart_labels[] = $schedule->date;
+        }
+
+        $line_chart_data = [];
+        foreach($line_chart_labels as $label) {
+            if(in_array($label, array_keys($attendances_data))) {
+                foreach($attendances_data as $key => $value) {
+                    if($key === $label) {
+                        if(!empty($value[1])) {
+                            $present = $value[1];
+                        } else {
+                            $present = 0;
+                        }
+                        if(!empty($value[2])) {
+                            $absent = $value[2];
+                        } else {
+                            $absent = 0;
+                        }
+                        if(!empty($value[3])) {
+                            $onLeave = $value[3];
+                        } else {
+                            $onLeave = 0;
+                        }
+                        $line_chart_data[] = [
+                            'present' => $present,
+                            'absent' => $absent,
+                            'onLeave' => $onLeave,
+                        ];
+                    }
+                }
+            } else {
+                $line_chart_data[] = [
+                    'present' => 0,
+                    'absent' => 0,
+                    'onLeave' => 0,
+                ];
+            }
+        }
+
+        $absent_students = [];
+        $present_students = [];
+        $onLeave_students = [];
+        foreach ($line_chart_data as $data) {
+            $absent_students[] = $data['absent'];
+            $present_students[] = $data['present'];
+            $onLeave_students[] = $data['onLeave'];  
+        }
+
+
         return view('attendance.history')
         ->with('schedules', $schedules)
-        ->with('class', $class);
+        ->with('class', $class)
+        ->with('numberStudentAbsentMoreThan3Sessions', $students_absent_array)
+        ->with('numberStudentPresentFullDay', $students_present_array)
+        ->with('allStudent', $all_students)
+        ->with('line_chart_labels', $line_chart_labels)
+        ->with('numberStudentPresent', $present_students)
+        ->with('numberStudentAbsent', $absent_students)
+        ->with('numberStudentOnLeave', $onLeave_students);
+
+        // return $students_present_array;
     }
 
 
