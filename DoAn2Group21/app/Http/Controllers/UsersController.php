@@ -59,6 +59,26 @@ class UsersController extends Controller
             ->make(true);
     }
 
+    public function get20Student($id)
+    {
+        $userInClass = ClassStudent::where('class_id', $id)->get('user_id');
+        $user = User::where('level', 1)->whereNotIn('id', $userInClass)->limit(20);
+        if(!empty($_GET['name'])){
+            $user = $user->where('name', 'like', '%'.$_GET['name'].'%');
+        }
+        if(!empty($_GET['email'])){
+            $user = $user->where('email', 'like', '%'.$_GET['email'].'%');
+        }
+        if(!empty($_GET['birthday'])){
+            $user = $user->where('phone', 'like', '%'.$_GET['birthday'].'%');
+        }
+        if(!empty($_GET['id'])){
+            $user = $user->where('id', $_GET['id']);
+        }
+        $user = $user->get();
+        return DataTables::of($user)->make(true);
+    }
+
     public function excelToDateTime($value)
     {
         $UNIX_DATE = ($value- 25569) * 86400;
