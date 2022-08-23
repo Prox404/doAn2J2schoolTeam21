@@ -38,6 +38,7 @@ Route::group([
     Route::post('import/user', [\App\Http\Controllers\UsersController::class,'import'])->name('import');
     Route::post('advancedImport/', [\App\Http\Controllers\UsersController::class,'advancedImport'])->name('advancedImport');
     Route::post('/create', [\App\Http\Controllers\UsersController::class,'store'])->name('store');
+    Route::get('get20Student/{id}', [\App\Http\Controllers\UsersController::class,'get20Student'])->name('get20Student');
 });
 
 Route::group([
@@ -69,6 +70,8 @@ Route::group([
     Route::get('/addTeacher/{classes}', [\App\Http\Controllers\ClassesController::class,'addTeacher'])->name('addTeacher');
     Route::put('storeTeacher', [\App\Http\Controllers\ClassesController::class,'storeTeacher'])->name('storeTeacher');
     Route::post('/create', [\App\Http\Controllers\ClassesController::class,'store'])->name('store');
+    Route::get('accept/{class}', [\App\Http\Controllers\ClassesController::class,'accept'])->name('accept');
+    Route::get('checkInformation/{id}', [\App\Http\Controllers\ClassesController::class,'checkInformation'])->name('checkInformation');
 });
 
 Route::group([
@@ -104,5 +107,6 @@ Route::group([
     'middleware' => 'isFromTeacherToSuperAdmin',
 ], function (){
     Route::post('/import/{id}', [\App\Http\Controllers\ClassStudentController::class,'import'])->name('import');
+    Route::post('store/{id}', [\App\Http\Controllers\ClassStudentController::class,'store'])->name('store');
     Route::delete('/destroy/{id}', [\App\Http\Controllers\ClassStudentController::class,'destroy'])->name('destroy');
 });

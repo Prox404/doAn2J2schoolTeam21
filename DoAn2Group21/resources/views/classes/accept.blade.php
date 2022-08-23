@@ -187,6 +187,18 @@
             </div>
         </section>
     </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h4 class="card-title">Xác nhận</h4>
+        </div>
+        <div class="card-body">
+            <div class="col-12 d-flex justify-content-center mb-3">
+                <button type="button" class="btn btn-primary" id="accepted">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
     @if($numberOfStudents < 15)
         <div class="modal fade text-left modal-borderless" id="import-class-modal" tabindex="-1" role="dialog"
             aria-labelledby="myModalLabel1" aria-hidden="true">
@@ -531,6 +543,21 @@
             });
 
             
+        });
+    </script>
+    <script>
+        $( "#accepted" ).click(function() {
+            $.ajax({
+                type: "GET",
+                url: "{{ route('class.checkInformation',  $class) }}",
+                success: function (response) {
+                    if(response.status == 'error'){
+                        alert(response.message);
+                    }else{
+                        window.location.href = "{{route('class.index')}}";
+                    }
+                }
+            });
         });
     </script>
     {{-- js end --}}

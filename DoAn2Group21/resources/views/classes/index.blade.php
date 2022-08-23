@@ -25,10 +25,10 @@
                 </div>
                 <div class="card-body">
                     <div class="col-12 d-flex justify-content-start mb-3">
+                        <button type="button" class="btn btn-primary me-1 " data-bs-toggle="modal"
+                            data-bs-target="#auto-upload-class"><i class="fas fa-file-upload"> </i> Tải lên lớp học</button>
                         <a href="#" type="button" class="btn btn-success me-1 " data-bs-toggle="modal"
-                            data-bs-target="#addSubjectModal">Thêm lớp học</a>
-                        <button type="button" class="btn btn-success me-1 " data-bs-toggle="modal"
-                            data-bs-target="#auto-upload-class">Tải lên lớp học</button>
+                            data-bs-target="#addSubjectModal"><i class="fas fa-plus"> </i> Thêm lớp học</a>
 
                         
                     </div>
@@ -36,13 +36,16 @@
                     <table id="basic-datatable" class="table dt-responsive nowrap w-100">
                         <thead>
                             <tr>
-                                <th>Class Name</th>
-                                <th>Subject Name</th>
+                                <th>Tên lớp</th>
+                                <th>Tên môn</th>
                                 <th>Buổi học</th>
                                 <th>Ca</th>
-                                <th>Teacher</th>
-                                <th>Edit</th>
-                                <th>Destroy</th>
+                                <th>Đã học</th>
+                                <th>K.thúc dự kiến</th>
+                                <th>Giảng viên</th>
+                                <th style="width: 40px;">Action</th>
+                                <th style="width: 40px;"></th>
+                                <th style="width: 40px;"></th>
                             </tr>
                         </thead>
 
@@ -131,7 +134,7 @@
                 </div>
                 <div class="modal-body">
                     <center>
-                        <a href="{{asset('files/excel/auto-upload-class-example.xlsx')}}" class="btn btn-primary mb-5">Tải file mẫu</a>
+                        <a href="{{asset('files/excel/auto-upload-class-example.xlsx')}}" class="btn btn-primary mb-5"><i class="fas fa-file-download"></i> Tải file mẫu</a>
                         <img class="mx-auto w-32 mb-5" src="https://user-images.githubusercontent.com/507615/54591670-ac0a0180-4a65-11e9-846c-e55ffce0fe7b.png" alt="no data" />
                         <div class="input-group mb-3 d-flex justify-content-center">
                             <form action="{{ route('user.advancedImport') }}" method="POST" enctype="multipart/form-data">
@@ -156,6 +159,7 @@
             </div>
         </div>
     </div>
+
 @stop
 @push('js')
     {{-- js start --}}
@@ -188,8 +192,20 @@
                         name: 'shift'
                     },
                     {
+                        data: 'numberOfLessonsLearned',
+                        name: 'numberOfLessonsLearned',
+                        searchable: false
+
+                    },
+                    {
+                        data: 'expectedEndDate',
+                        name: 'expectedEndDate',
+                        searchable: false
+
+                    },
+                    {
                         data: 'teacher',
-                        targets: 2,
+                        targets: 6,
                         orderable: false,
                         searchable: false,
                         render: function(data, type, row, meta) {
@@ -206,27 +222,47 @@
                     },
                     {
                         data: 'edit',
-                        targets: 3,
+                        targets: 7,
                         orderable: false,
                         searchable: false,
                         render: function(data, type, row, meta) {
                             return `<a class="btn btn-success" href="${data}" >
-                                Edit
+                                <i class="fas fa-pen"></i>
                             </a>`;
                         }
                     },
                     {
                         data: 'destroy',
-                        targets: 4,
+                        targets: 8,
                         orderable: false,
                         searchable: false,
                         render: function(data) {
 
                             return `<form action="${data}" method="post">
-                            @csrf
-                            @method('DELETE')
-                            <button type='submit' class="btn-delete btn btn-danger">Delete</button>
-                        </form>`;
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type='submit' class="btn-delete btn btn-danger">
+                                             <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>`
+                            ;
+                        }
+                    },
+                    {
+                        data: 'accept',
+                        targets: 9,
+                        orderable: false,
+                        searchable: false,
+                        render: function(data) {
+                            if(data.status == 404){
+                                return `<a class="btn btn-success" href="${data.href}" >
+                                            <i class="fas fa-check"></i>
+                                        </a>`
+                                ;
+                            }
+                            if(data.status == 1){
+                                return '';
+                            }
                         }
                     }
                 ]
