@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="{{asset('vendors/perfect-scrollbar/perfect-scrollbar.css')}}">
     <link rel="stylesheet" href="{{asset('vendors/bootstrap-icons/bootstrap-icons.css')}}">
     <link rel="stylesheet" href="{{asset('css/app.css')}}">
+    <link rel="stylesheet" href="{{asset('css/widgets/loader.css')}}">
     <link rel="shortcut icon" href="{{asset('images/favicon.svg" type="image/x-icon')}}">
  
 </head>
@@ -57,6 +58,13 @@
         <!-- Footer end --->
     </div>
 </div>
+
+<div class="wrapper">
+    <div class="loader">
+        <img src="{{asset('vendors/svg-loaders/prox.gif')}}" class="me-4" style="width: 4rem" alt="audio">
+    </div>
+</div>
+
 @stack('js')
 <script src="{{asset('vendors/perfect-scrollbar/perfect-scrollbar.min.js')}}"></script>
 <script src="{{asset('js/bootstrap.bundle.min.js')}}"></script>
@@ -66,7 +74,13 @@
 {{--<script src="{{asset('js/pages/dashboard.js')}}"></script>--}}
 
 <script src="{{asset('js/main.js')}}"></script>
-
+<script>
+   const fadeOut = () => {
+       const loaderWrapper = document.querySelector('.wrapper');
+         loaderWrapper.classList.add('fade-out');
+   } 
+   window.addEventListener('load', fadeOut);
+</script>
 </body>
 
 </html>

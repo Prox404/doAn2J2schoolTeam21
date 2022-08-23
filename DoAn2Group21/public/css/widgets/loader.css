@@ -1,0 +1,14 @@
+.wrapper {
+    position: fixed;
+    z-index: 9999;
+    inset: 0;
+    background-color: #fff;
+    display: grid;
+    place-items: center;
+    transition: opacity 0.3s, visibility 1s;
+}
+
+.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
