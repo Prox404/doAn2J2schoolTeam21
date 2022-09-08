@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{{ asset('/vendors/dripicons/webfont.css') }}">
     <link rel="stylesheet" href="{{ asset('/vendors/dripicons/webfont.css') }}">
     <link rel="stylesheet" href="{{ asset('/vendors/chartjs/Chart.min.css') }}">
+    <link href="{{ asset('css/pages/calendar.css') }}" rel="stylesheet" type="text/css" />
     {{-- css end --}}
 @endpush
 @php
@@ -37,8 +38,8 @@ use Illuminate\Support\Carbon;
                                     </div>
                                 </div>
                                 <div class="col-md-8">
-                                    <button data-bs-toggle="modal"
-                                    data-bs-target="#all-student-modal" style="text-align: left " class="btn btn-white p-0">
+                                    <button data-bs-toggle="modal" data-bs-target="#all-student-modal"
+                                        style="text-align: left " class="btn btn-white p-0">
                                         <h6 class="text-muted font-semibold">Tổng số học sinh</h6>
                                         <h6 class="font-extrabold mb-0">{{ count($allStudent) }}</h6>
                                     </button>
@@ -58,8 +59,8 @@ use Illuminate\Support\Carbon;
                                     </div>
                                 </div>
                                 <div class="col-md-8">
-                                    <button data-bs-toggle="modal"
-                                    data-bs-target="#present-student-modal" style="text-align: left " class="btn btn-white p-0">
+                                    <button data-bs-toggle="modal" data-bs-target="#present-student-modal"
+                                        style="text-align: left " class="btn btn-white p-0">
                                         <h6 class="text-muted font-semibold">Số học sinh đi học đầy đủ</h6>
                                         <h6 class="font-extrabold mb-0">{{ count($numberStudentPresentFullDay) }}</h6>
                                     </button>
@@ -79,8 +80,8 @@ use Illuminate\Support\Carbon;
                                     </div>
                                 </div>
                                 <div class="col-md-8">
-                                    <button data-bs-toggle="modal"
-                                    data-bs-target="#absent-student-modal" style="text-align: left " class="btn btn-white p-0">
+                                    <button data-bs-toggle="modal" data-bs-target="#absent-student-modal"
+                                        style="text-align: left " class="btn btn-white p-0">
                                         <h6 class="text-muted font-semibold">Số học sinh nghỉ quá 3 buổi</h6>
                                         <h6 class="font-extrabold mb-0">{{ count($numberStudentAbsentMoreThan3Sessions) }}
                                         </h6>
@@ -107,69 +108,14 @@ use Illuminate\Support\Carbon;
                     <h4 class="card-title">Số buổi học</h4>
                 </div>
                 <div class="card-body">
-                    @foreach ($schedules as $schedule)
-                        <div class="btn-group btn-group-sm mb-2" role="group">
-                            @php
-                                $date = new Carbon($schedule->date);
-                                $now = Carbon::now();
-                            @endphp
-                            <a href="{{ $class->id }}/{{ $schedule->id }}"
-                                class="btn 
-                            @if ($date->gt($now)) btn-primary
-                            @else
-                                btn-light @endif
-                            ">
-
-                                @switch($date->isoFormat('E'))
-                                    @case(1)
-                                        Mon,
-                                    @break
-
-                                    @case(2)
-                                        Tue,
-                                    @break
-
-                                    @case(3)
-                                        Wed,
-                                    @break
-
-                                    @case(4)
-                                        Thu,
-                                    @break
-
-                                    @case(5)
-                                        Fri,
-                                    @break
-
-                                    @case(6)
-                                        Sat,
-                                    @break
-
-                                    @case(7)
-                                        Sun,
-                                    @break
-
-                                    @default
-                                        Unknown,
-                                @endswitch
-
-                                {{ $schedule->date }}
-
-                                @if (!isset(
-                                    $schedule->attendance()->where('schedule_id', $schedule->id)->first()->status))
-                                    <i title="Chưa điểm danh" class="fas fa-info-circle"></i>
-                                @endif
-                            </a>
-                            <button type="button" class="btn"><i class="icon dripicons-cross"></i></button>
-                        </div>
-                    @endforeach
+                    <div id='calendar'></div>
                 </div>
             </div>
         </section>
     </div>
 
-    <div class="modal fade text-left w-100" id="present-student-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel16"
-        aria-hidden="true">
+    <div class="modal fade text-left w-100" id="present-student-modal" tabindex="-1" role="dialog"
+        aria-labelledby="myModalLabel16" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -209,8 +155,8 @@ use Illuminate\Support\Carbon;
             </div>
         </div>
     </div>
-    <div class="modal fade text-left w-100" id="absent-student-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel16"
-        aria-hidden="true">
+    <div class="modal fade text-left w-100" id="absent-student-modal" tabindex="-1" role="dialog"
+        aria-labelledby="myModalLabel16" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -250,8 +196,8 @@ use Illuminate\Support\Carbon;
             </div>
         </div>
     </div>
-    <div class="modal fade text-left w-100" id="all-student-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel16"
-        aria-hidden="true">
+    <div class="modal fade text-left w-100" id="all-student-modal" tabindex="-1" role="dialog"
+        aria-labelledby="myModalLabel16" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -334,6 +280,70 @@ use Illuminate\Support\Carbon;
                     display: false
                 }
             }
+        });
+    </script>
+    <script src="{{ asset('js/pages/calendar.js') }}"></script>
+    <script src="{{ asset('js/pages/localest-all.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                headerToolbar: {
+                    left: 'title',
+                    center: '',
+                    right: 'today dayGridMonth,timeGridWeek,timeGridDay,listWeek prev,next'
+                },
+                themeSystem: 'Sandstone',
+                initialView: 'timeGridWeek',
+                eventRender: function(info) {
+                    var tooltip = new Tooltip(info.el, {
+                        title: info.event.extendedProps.description,
+                        placement: 'top',
+                        trigger: 'hover',
+                        container: 'body'
+                    });
+                },
+                events: [
+                    @foreach ($schedules as $schedule)
+                        @php
+                            $add_date = 0;
+                            if ($schedule->classes['shift'] == 1) {
+                                $add_date = 7;
+                            } else {
+                                $add_date = 13;
+                            }
+                            $date = new Carbon($schedule->date);
+                            $start = $date->addHours($add_date)->format('Y-m-d H:i:s');
+                            $end = $date->addHours(2)->format('Y-m-d H:i:s');
+                            $now = Carbon::now();
+                        @endphp
+
+                        {
+                            title: '{{ $schedule->classes['name'] }}',
+                            url: '{{ $class->id }}/{{ $schedule->id }}',
+                            start: '{{ $start }}',
+                            end: '{{ $end }}',
+                            description: 'ALoo',
+                            allDay: false,
+                            textColor: '#000',
+                            color: @if ($date->gt($now))
+                                '#F0F0FE'
+                            @else
+                                @if (!isset(
+                                    $schedule->attendance()->where('schedule_id', $schedule->id)->first()->status))
+                                    '#FFF9EF'
+                                @else
+                                    '#d2ffe8'
+                                @endif
+                            @endif
+                        },
+                    @endforeach
+                ]
+                
+            });
+
+            calendar.render();
         });
     </script>
     {{-- js end --}}
