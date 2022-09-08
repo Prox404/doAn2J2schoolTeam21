@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="{{ asset('vendors/choices.js/choices.min.css') }}" />
     {{-- css end --}}
 @endpush
+@php
+use Illuminate\Support\Carbon;
+@endphp
 @section('content')
     <div class="page-content">
         @if (session()->has('message'))
@@ -136,41 +139,47 @@
         </script>
     @endif
     @if (auth()->user()->level == 1 || auth()->user()->level == 2)
-        
         <script src="{{ asset('js/pages/calendar.js') }}"></script>
         <script src="{{ asset('js/pages/localest-all.js') }}"></script>
         <script>
-            function randomBackgroundColor(){
+            function randomBackgroundColor() {
                 return 'rgb(' + (Math.floor((256 - 199) * Math.random()) + 200) + ',' + (Math.floor((256 - 199) *
-                Math.random()) + 200) + ',' + (Math.floor((256 - 199) * Math.random()) + 200) + ')';
+                    Math.random()) + 200) + ',' + (Math.floor((256 - 199) * Math.random()) + 200) + ')';
             }
 
             document.addEventListener('DOMContentLoaded', function() {
-                var initialLocaleCode = 'vi';
-                var localeSelectorEl = document.getElementById('locale-selector');
                 var calendarEl = document.getElementById('calendar');
 
                 var calendar = new FullCalendar.Calendar(calendarEl, {
                     headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+                        left: 'title',
+                        center: '',
+                        right: 'today dayGridMonth,timeGridWeek,timeGridDay,listWeek prev,next'
                     },
-                    // initialDate: '2020-09-12',
-                    locale: initialLocaleCode,
-                    buttonIcons: false, // show the prev/next text
-                    weekNumbers: true,
-                    navLinks: true, // can click day/week names to navigate views
-                    editable: false,
-                    dayMaxEvents: true, // allow "more" link when too many events
-                    events: 
-                    [   
+                    themeSystem: 'Sandstone',
+                    initialView: 'timeGridWeek',
+                    events: [
                         @foreach ($schedules as $schedule)
+                            @php
+                                $add_date = 0;
+                                if ($schedule['shift'] == 1) {
+                                    $add_date = 7;
+                                } else {
+                                    $add_date = 13;
+                                }
+                                $date = new Carbon($schedule->date);
+                                $start = $date->addHours($add_date)->format('Y-m-d H:i:s');
+                                $end = $date->addHours(2)->format('Y-m-d H:i:s');
+                                $now = Carbon::now();
+                            @endphp
+
                             {
-                                title: '{{ $schedule->name }} | {{ $schedule->shift == 1 ? "Sáng 7:00 - 9:00" : "Chiều 13:00 - 15:00" }}',
-                                start: '{{ $schedule->date }}',
-                                color: randomBackgroundColor(),
+                                title: '{{ $schedule['name'] }}',
+                                start: '{{ $start }}',
+                                end: '{{ $end }}',
+                                allDay: false,
                                 textColor: '#000',
+                                color: randomBackgroundColor()
                             },
                         @endforeach
                     ]
@@ -178,25 +187,8 @@
 
                 calendar.render();
 
-                // build the locale selector's options
-                calendar.getAvailableLocaleCodes().forEach(function(localeCode) {
-                    var optionEl = document.createElement('option');
-                    optionEl.value = localeCode;
-                    optionEl.selected = localeCode == initialLocaleCode;
-                    optionEl.innerText = localeCode;
-                    localeSelectorEl.appendChild(optionEl);
-                });
-
-                // when the selected option changes, dynamically change the calendar option
-                localeSelectorEl.addEventListener('change', function() {
-                    if (this.value) {
-                        calendar.setOption('locale', this.value);
-                    }
-                });
-
             });
         </script>
-        
     @endif
     {{-- js end --}}
 @endpush
