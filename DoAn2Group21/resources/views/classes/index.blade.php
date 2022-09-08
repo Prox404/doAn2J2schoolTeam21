@@ -74,11 +74,6 @@
                             <div class="row">
                                 <div class="col-12">
                                     <div class="form-group">
-                                        <label for="name-vertical">Class Name</label>
-                                        <input type="text" id="class-name" class="form-control" name="name"
-                                            placeholder="Class Name">
-                                    </div>
-                                    <div class="form-group">
                                         <label for="subject">Môn học</label>
                                         <select class="choices form-select" id="subject" name="subject">
                                             <option placeholder>Chưa có môn học</option>
@@ -86,6 +81,11 @@
                                                 <option value="{{ $data->id }}">{{ $data->name }}</option>
                                             @endforeach
                                         </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="name-vertical">Class Name</label>
+                                        <input type="text" id="class-name" class="form-control" name="name"
+                                            placeholder="Class Name" disabled>
                                     </div>
                                     <div class="form-group">
                                         <label for="weekday">Buổi học</label>
@@ -293,6 +293,27 @@
                 return true;
             }
         }
+    </script>
+    <script>
+        $(document).ready(function() {
+            $('#subject').change(function() {
+                var subject_id = $(this).val();
+                if (subject_id != '') {
+                    var _token = $('input[name="_token"]').val();
+                    $.ajax({
+                        url: "{{ route('class.getLatestName') }}",
+                        method: "POST",
+                        data: {
+                            subject_id: subject_id,
+                            _token: _token
+                        },
+                        success: function(result) {
+                            $('#class-name').val(result);
+                        }
+                    })
+                }
+            });
+        });
     </script>
     {{-- js end --}}
 @endpush
