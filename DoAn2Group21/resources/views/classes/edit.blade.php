@@ -114,15 +114,14 @@
                                             <label for="teacher">Giảng viên</label>
                                             <select id="teacher" class="choices form-select" id="teacher" name="teacher">
                                                 <option placeholder>Chưa có giảng viên</option>
+                                                @if (!empty($current_teacher)) 
+                                                    <option value="{{ $current_teacher->id }}" selected>{{ $current_teacher->name }}</option>
+                                                @endif
                                                 @foreach ($teachers as $data)
-                                                    <option value="{{ $data->user_id }}"
-                                                        @if (!empty($current_teacher)) 
-                                                            @if ($current_teacher->id == $data->user_id)
-                                                                selected 
-                                                            @endif
-                                                        @endif
-                                                        >{{ $data->user_name }}</option>
+                                                    <option value="{{ $data->id }}">{{ $data->name }}</option>
+                                                    
                                                 @endforeach
+                                                
                                             </select>
                                         </div>
                                         {{-- {{$current_teacher}} --}}
