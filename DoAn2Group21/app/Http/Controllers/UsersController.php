@@ -89,11 +89,7 @@ class UsersController extends Controller
     {
         try {
 
-            if (!empty($_SESSION['id'])) {
-                $user_id = $_SESSION['id'];
-            } else {
-                $user_id = 0;
-            }
+            $user_id = auth()->user()->id;
 
             $import = Excel::toArray(new UsersImport, request()->file('user_file'));
             $import = $import[0];
@@ -131,11 +127,7 @@ class UsersController extends Controller
 
     public function advancedImport()
     {
-        if (!empty($_SESSION['id'])) {
-            $user_id = $_SESSION['id'];
-        } else {
-            $user_id = 0;
-        }
+        $user_id = auth()->user()->id;
 
         try {
             $import = Excel::toArray(new AdvancedUserImport, request()->file('user_file'));
@@ -264,7 +256,7 @@ class UsersController extends Controller
 
     public function store(StoreRequest $request)
     {
-        $added_by = session('id');
+        $added_by = auth()->user()->id;;
         $user = $request->validated();
         $user['password'] = bcrypt($user['birthday']);
         $user['added_by'] = $added_by;
@@ -274,7 +266,14 @@ class UsersController extends Controller
 
     public function destroy(User $user)
     {
-        $user->delete();
-        return redirect()->route('user.index')->with('message', 'Success delete ' . $user->name . ' !!!');
+        
+        if(ClassStudent::where('user_id', $user->id)->count() > 0 ){ 
+            return redirect()->back()->with('message', 'Không thể xóa học viên đã đi học !');
+        }else{
+            $user->delete();
+            return redirect()->route('user.index')->with('message', 'Success delete ' . $user->name . ' !!!');
+            // return "deleted";
+        }
+        
     }
 }

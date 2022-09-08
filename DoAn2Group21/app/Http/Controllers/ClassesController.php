@@ -53,10 +53,10 @@ class ClassesController extends Controller
 
         return DataTables::of($query)
             ->editColumn('weekdays', function ($object) {
-                if(!empty($object->weekdays)) {
+                if (!empty($object->weekdays)) {
                     $weekdayName = [];
-                    foreach($object->weekdays as $weekday) {
-                        switch($weekday){
+                    foreach ($object->weekdays as $weekday) {
+                        switch ($weekday) {
                             case 1:
                                 $weekdayName[] = 'T2';
                                 break;
@@ -81,18 +81,18 @@ class ClassesController extends Controller
                         }
                     }
                     return implode(', ', $weekdayName);
-                }else {
+                } else {
                     return 'Chưa cập nhật';
                 }
             })
             ->editColumn('shift', function ($object) {
-                if(!empty($object->shift)) {
-                    if($object->shift == 1) {
+                if (!empty($object->shift)) {
+                    if ($object->shift == 1) {
                         return 'Sáng';
-                    }else {
+                    } else {
                         return 'Chiều';
                     }
-                }else{
+                } else {
                     return 'Chưa cập nhật';
                 }
             })
@@ -100,23 +100,23 @@ class ClassesController extends Controller
                 $schedules = Schedules::where('class_id', $object->id)->get();
                 // $attendance = 0;
                 $schedule_id = [];
-                foreach($schedules as $schedule) {
+                foreach ($schedules as $schedule) {
                     $schedule_id[] = $schedule->id;
                 }
                 $attendance = Attendance::whereIn('schedule_id', $schedule_id)->distinct()->get('schedule_id')->count();
-                return $attendance . '/'. count($schedule_id)  ;
+                return $attendance . '/' . count($schedule_id);
             })
             ->addColumn('expectedEndDate', function ($object) {
                 $schedules = Schedules::where('class_id', $object->id)->get();
                 // $attendance = 0;
                 $schedule_id = [];
-                foreach($schedules as $schedule) {
+                foreach ($schedules as $schedule) {
                     $schedule_id[] = $schedule->id;
                 }
                 $attendance = Attendance::whereIn('schedule_id', $schedule_id)->distinct()->get('schedule_id');
                 $remainingDays = count($schedule_id) - count($attendance);
                 $lastSchedule = $attendance->last();
-                $lastScheduleDate = Schedules::where('id', $lastSchedule['schedule_id'])->orderBy('date', 'desc')->first()['date'];  
+                $lastScheduleDate = Schedules::where('id', $lastSchedule['schedule_id'])->orderBy('date', 'desc')->first()['date'];
                 $currentDate = Carbon::parse($lastScheduleDate)->addDays(1);
 
                 $weekdays = $object->weekdays;
@@ -124,14 +124,14 @@ class ClassesController extends Controller
                 $numberFailDate = 0;
                 $numberSuccessDate = 0;
                 while ($numberFailDate < 365) {
-                    if($numberSuccessDate <= $remainingDays){
-                        if(in_array($currentDate->isoFormat('E'), $weekdays)){
+                    if ($numberSuccessDate <= $remainingDays) {
+                        if (in_array($currentDate->isoFormat('E'), $weekdays)) {
                             $numberSuccessDate++;
-                        }else{
+                        } else {
                             $numberFailDate++;
                         }
                         $currentDate->addDays(1);
-                    }else{
+                    } else {
                         break;
                     }
                 }
@@ -166,12 +166,12 @@ class ClassesController extends Controller
                 return route('class.destroy', $object);
             })
             ->addColumn('accept', function ($object) {
-                if($object->status == 1){
+                if ($object->status == 1) {
                     return [
                         'href' => route('class.accept', $object),
                         'status' => 404,
                     ];
-                }else{
+                } else {
                     return [
                         'status' => 1,
                     ];
@@ -182,14 +182,32 @@ class ClassesController extends Controller
 
     public function addTeacher($id)
     {
-        $teachers = User::query()
-            ->addSelect('users.id as id', 'users.name as name')
+        $class = Classes::find($id);
+        $classWeekday = $class->weekdays;
+        $classShift = $class->shift;
+
+        $all_valid = Classes::query()
+            ->addSelect('classes.*')
+            ->orWhere(function ($query) use ($classWeekday, $classShift) {
+                foreach ($classWeekday as $weekday) {
+                    $query->orWhereJsonContains('weekdays', $weekday)
+                        ->where('shift', $classShift);
+                }
+            })
+            ->get('id');
+
+        $teacher_not_valid = ClassStudent::query()
+            ->addSelect('class_students.*')
+            ->whereIn('class_id', $all_valid)
+            ->get('user_id');
+        $teacher = User::query()
             ->where('level', 2)
-            ->get();
-        
-        return view('classes.addTeacher', [
-            'teachers' => $teachers,
+            ->whereNotIn('id', $teacher_not_valid)
+            ->get(['id', 'name']);
+
+        return view('classes.addTeacher')->with([
             'class_id' => $id,
+            'teachers' => $teacher,
         ]);
     }
 
@@ -207,7 +225,7 @@ class ClassesController extends Controller
         $name = $request->name;
         $subject_id = $request->subject;
         $weekdays = $request->weekday;
-        $shift = $request->shift; 
+        $shift = $request->shift;
         $teacher_id = $request->teacher;
 
         $teacher = ClassStudent::query()
@@ -219,7 +237,7 @@ class ClassesController extends Controller
 
 
         // remove older teacher    
-        if(!empty($teacher)){
+        if (!empty($teacher)) {
             $current_teacher_id = $teacher->id;
             ClassStudent::where('user_id', $current_teacher_id)->delete();
         }
@@ -252,18 +270,35 @@ class ClassesController extends Controller
         $teacher = ClassStudent::query()
             ->select('users.id as id', 'users.name as name')
             ->leftJoin('users', 'class_students.user_id', 'users.id')
-            ->where('class_id', $id )
+            ->where('class_id', $id)
             ->where('users.level', 2)
             ->first();
 
-        if(!isset($teacher)){
+        if (!isset($teacher)) {
             $teacher = null;
         }
-        
+
+        $classWeekday = $class->weekdays;
+        $classShift = $class->shift;
+
+        $all_invalid_class = Classes::query()
+            ->addSelect('classes.*')
+            ->orWhere(function ($query) use ($classWeekday, $classShift) {
+                foreach ($classWeekday as $weekday) {
+                    $query->orWhereJsonContains('weekdays', $weekday)
+                        ->where('shift', $classShift);
+                }
+            })
+            ->get('id');
+
+        $teacher_not_valid = ClassStudent::query()
+            ->addSelect('class_students.*')
+            ->whereIn('class_id', $all_invalid_class)
+            ->get('user_id');
         $teachers = User::query()
-            ->addSelect('users.id as user_id', 'users.name as user_name')
             ->where('level', 2)
-            ->get();
+            ->whereNotIn('id', $teacher_not_valid)
+            ->get(['id', 'name']);
 
         $weekdays = $class->weekdays;
 
@@ -294,15 +329,25 @@ class ClassesController extends Controller
             ->get();
         return DataTables::of($query)
             ->addColumn('destroy', function ($object) {
-                return route('classStudent.destroy', $object);
+                return route('classStudent.destroy', [$object->id, $object->class_id]);
             })
             ->make(true);
     }
 
-    public function destroy(Classes $class)
+    public function destroy($id)
     {
-        // $class->delete();
-        // return redirect()->route('subject.index')->with('message', 'Success delete ' . $class->name .' !!!');
+        if (auth()->user()->level > 2) {
+            $number_student_of_class = ClassStudent::query()
+                ->where('class_id', $id)
+                ->count();
+
+            if ($number_student_of_class > 0) {
+                return redirect()->route('class.index')->with('message', 'Can not delete this class, because it has students !');
+            } else {
+                Classes::destroy($id);
+                return redirect()->route('class.index')->with('message', 'Success delete !!!');
+            }
+        }
     }
 
     public function store(Request $request)
@@ -336,7 +381,7 @@ class ClassesController extends Controller
         try {
             while (true) {
                 if ($count < $class_sessions) {
-                    if(in_array($date->isoFormat('E'), $weekdays)){
+                    if (in_array($date->isoFormat('E'), $weekdays)) {
                         $schedule = new Schedules();
                         $schedule->class_id = $id;
                         $schedule->date = $date->format('Y-m-d');
@@ -344,7 +389,7 @@ class ClassesController extends Controller
                         $count++;
                     }
                     $date->addDays(1);
-                }else{
+                } else {
                     break;
                 }
             }
@@ -368,14 +413,14 @@ class ClassesController extends Controller
         $teacher = ClassStudent::query()
             ->select('users.id as id', 'users.name as name')
             ->leftJoin('users', 'class_students.user_id', 'users.id')
-            ->where('class_id', $id )
+            ->where('class_id', $id)
             ->where('users.level', 2)
             ->first();
 
-        if(!isset($teacher)){
+        if (!isset($teacher)) {
             $teacher = null;
         }
-        
+
         $teachers = User::query()
             ->addSelect('users.id as user_id', 'users.name as user_name')
             ->where('level', 2)
@@ -404,28 +449,27 @@ class ClassesController extends Controller
         $teacher = ClassStudent::query()
             ->select('users.id as id', 'users.name as name')
             ->leftJoin('users', 'class_students.user_id', 'users.id')
-            ->where('class_id', $id )
+            ->where('class_id', $id)
             ->where('users.level', 2)
-            ->count();
-        ;
+            ->count();;
 
         $classStudent = ClassStudent::where('class_id', $id)->get();
 
 
-        if(count($class->weekdays) == 0){
+        if (count($class->weekdays) == 0) {
             $classFlag = false;
-        }else if($class->shift == null){
+        } else if ($class->shift == null) {
             $classFlag = false;
-        }else if($class->subject_id == null){
+        } else if ($class->subject_id == null) {
             $classFlag = false;
-        }else if($class->name == null){
+        } else if ($class->name == null) {
             $classFlag = false;
-        }else if($teacher == 0){
+        } else if ($teacher == 0) {
             $classFlag = false;
         }
 
         $classStudentFlag = true;
-        if($classStudent->count() - $teacher < 15){
+        if ($classStudent->count() - $teacher < 15) {
             $classStudentFlag = false;
         }
 
@@ -436,18 +480,17 @@ class ClassesController extends Controller
                     'message' => 'Vui lòng điền đủ thông tin lớp học !',
                 ]
             );
-        }else{
-            if($classStudentFlag == false){
+        } else {
+            if ($classStudentFlag == false) {
                 return response()->json(
                     [
                         'status' => 'error',
                         'message' => 'Số lượng sinh viên chưa đủ điều kiện mở lớp !',
                     ]
                 );
-            }else{
+            } else {
                 Classes::where('id', $id)->update(['status' => 2]);
-                return (
-                    [
+                return ([
                         'status' => 'success',
                         'message' => 'Thành công !',
                     ]
@@ -457,5 +500,24 @@ class ClassesController extends Controller
 
         return $teacher;
     }
-    
+
+    public function getLatestName(Request $request)
+    {
+        $subject_id = $request->subject_id;
+        $subject_name = Subjects::query()
+            ->select('name')
+            ->where('id', $subject_id)
+            ->first();
+        $current_class =  Classes::where('name', 'like', $subject_name->name . '%')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        if (!empty($current_class)) {
+            preg_match_all('!\d+!', $current_class->name, $matches);
+            $number = intval($matches[0][0]) + 1;
+            return $subject_name->name . $number;
+        } else {
+            return $subject_name->name . '1';
+        }
+    }
 }

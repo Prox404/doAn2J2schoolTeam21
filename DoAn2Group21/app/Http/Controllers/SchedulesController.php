@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attendance;
 use App\Models\Classes;
 use App\Models\ClassStudent;
 use App\Models\Schedules;
@@ -28,27 +29,18 @@ class SchedulesController extends Controller
         if(auth()->user()->level == 1 || auth()->user()->level == 2){
             $id = auth()->user()->id;
 
-            $class = ClassStudent::where('user_id', $id)
-            ->groupBy('class_id')
+            $class_id = ClassStudent::where('user_id', $id)
+            ->distinct('class_id')
+            ->get('class_id');
+
+            $schedules = Schedules::whereIn('class_id', $class_id)
+            ->leftJoin('classes', 'schedules.class_id', 'classes.id')
             ->get();
-
-            $schedules = [];
-
-            foreach($class as $item) {
-                $schedules[] = Schedules::where('class_id', $item->class_id)
-                ->addSelect('classes.*')
-                ->addSelect('schedules.*')
-                ->leftJoin('classes', 'schedules.class_id', 'classes.id')
-                ->get();
-            }
-
-            $schedules = collect($schedules)->collapse();
             
             return view('schedules.index', [
                 'schedules' => $schedules,
             ]);
 
-            // return $schedules;
         }
         return view('schedules.index');
     }
@@ -65,7 +57,7 @@ class SchedulesController extends Controller
                 return route('schedule.edit', $object);
             })
             ->addColumn('destroy', function ($object) {
-                return route('class.destroy', $object);
+                return route('schedule.classDestroy', $object);
             })
             ->addColumn('autoSchedule', function ($object) {
                 if (isset($object->schedule()->where('class_id', $object->id)->first()->id)) {
@@ -99,8 +91,29 @@ class SchedulesController extends Controller
 
     public function destroy(Schedules $schedule)
     {
-        $schedule->delete();
-        return redirect()->route('schedule.edit', $schedule->class_id)->with('success', 'Schedule deleted successfully');
+        if (auth()->user()->level > 2) {
+            if(Attendance::where('schedule_id', $schedule->id)->count() > 0){
+                return redirect()->route('schedule.edit', $schedule->id)->with('message', 'Cannot delete, it already enable !!!');
+            }else{
+                $schedule->delete();
+                return redirect()->route('schedule.edit', $schedule->class_id)->with('success', 'Schedule deleted successfully');
+                // return "deleted";
+            }
+        }  
+    }
+    
+    public function classDestroy($id)
+    {
+        $all_schedule = Schedules::where('class_id', $id)->get('id');
+        if (auth()->user()->level > 2) {
+            if(Attendance::whereIn('schedule_id', $all_schedule)->count() > 0){
+                return redirect()->route('schedule.edit', $id)->with('message', 'Cannot delete, it already enable !!!');
+            }else{
+                Schedules::whereIn('id', $all_schedule)->delete();
+                return redirect()->route('schedule.edit', $id)->with('success', 'Schedule deleted successfully');
+                // return "deleted";
+            }
+        }  
     }
 
     public function getSchedule($id)

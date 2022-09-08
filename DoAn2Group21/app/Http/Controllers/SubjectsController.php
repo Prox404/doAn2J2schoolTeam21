@@ -65,8 +65,16 @@ class SubjectsController extends Controller
 
     public function destroy(Subjects $subject)
     {   
-        $subject->delete();
-        return redirect()->route('subject.index')->with('message', 'Success delete ' . $subject->name .' !!!');
+        if (auth()->user()->level > 2) {
+            if(Classes::where('subject_id', $subject->id)->count() > 0){
+                return redirect()->route('subject.index')->with('message', 'This subject has classes !!!');
+            }else{
+                $subject->delete();
+                return redirect()->route('subject.index')->with('message', 'Success delete ' . $subject->name .' !!!');
+                // return "deleted"; 
+            }
+        }
+        
     }
 
     public function store(StoreRequest $request): \Illuminate\Http\RedirectResponse

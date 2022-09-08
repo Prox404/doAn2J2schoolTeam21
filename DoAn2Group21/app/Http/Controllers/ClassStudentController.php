@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Imports\ClassStudentImport;
+use App\Models\Classes;
 use App\Models\ClassStudent;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -45,10 +46,16 @@ class ClassStudentController extends Controller
         
     }
 
-    public function destroy($id)
+    public function destroy($id, $class_id)
     {
-        ClassStudent::where('user_id', $id)->delete();
-        return redirect()->back()->with('message', 'Xóa thành công !');
+        $isAccepted = Classes::find($class_id)->status;
+        if($isAccepted == 2){
+            return redirect()->back()->with('message', 'Không thể xóa học viên khi lớp đã được duyệt');
+        }else{
+            ClassStudent::where('user_id', $id)->delete();
+            return redirect()->back()->with('message', 'Xóa thành công !');
+            // return "deleted";
+        }
     }
 
     public function store(Request $request, $id)
