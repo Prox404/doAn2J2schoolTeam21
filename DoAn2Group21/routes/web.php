@@ -14,15 +14,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('home');
-})->middleware('requiredLogin');
+Route::get('/', [AuthController::class, 'dashboard'])->name('dashboard')->middleware('requiredLogin');
 
 Route::get('dashboard', [AuthController::class, 'dashboard'])->name('dashboard'); 
 Route::get('login', [AuthController::class, 'index'])->name('login')->middleware('isLogin');
-Route::post('custom-login', [AuthController::class, 'customLogin'])->name('login.custom'); 
-Route::get('registration', [AuthController::class, 'registration'])->name('register-user')->middleware('isLogin');
-Route::post('custom-registration', [AuthController::class, 'customRegistration'])->name('register.custom'); 
+Route::post('custom-login', [AuthController::class, 'customLogin'])->name('login.custom');
 Route::get('signout', [AuthController::class, 'signOut'])->name('signout');
 
 Route::group([
@@ -71,22 +67,23 @@ Route::group([
     Route::put('storeTeacher', [\App\Http\Controllers\ClassesController::class,'storeTeacher'])->name('storeTeacher');
     Route::post('/create', [\App\Http\Controllers\ClassesController::class,'store'])->name('store');
     Route::get('accept/{class}', [\App\Http\Controllers\ClassesController::class,'accept'])->name('accept');
+    Route::post('getLatestName', [\App\Http\Controllers\ClassesController::class,'getLatestName'])->name('getLatestName');
     Route::get('checkInformation/{id}', [\App\Http\Controllers\ClassesController::class,'checkInformation'])->name('checkInformation');
 });
 
+
+Route::get('attendances/', [\App\Http\Controllers\AttendanceController::class,'index'])->name('attendance.index')->middleware('isAuthenticated');
 Route::group([
     'prefix'=>'attendance', 
     'as' => 'attendance.',
     'middleware' => 'isFromTeacherToSuperAdmin',
 ], function (){
-    Route::get('/', [\App\Http\Controllers\AttendanceController::class,'index'])->name('index');
     Route::get('api', [\App\Http\Controllers\AttendanceController::class,'api'])->name('api');
     Route::get('history/{class}', [\App\Http\Controllers\AttendanceController::class,'history'])->name('history');
     Route::get('/history/{class_id}/{schedule_id}', [\App\Http\Controllers\AttendanceController::class,'attendance'])->name('attendance');
     Route::put('store', [\App\Http\Controllers\AttendanceController::class,'store'])->name('store');
-    Route::delete('/destroy/{classes}', [\App\Http\Controllers\AttendanceController::class,'destroy'])->name('destroy');
-
 });
+
 
 Route::group([
     'prefix'=>'schedules', 
@@ -98,6 +95,7 @@ Route::group([
     Route::get('edit/{class}', [\App\Http\Controllers\SchedulesController::class,'edit'])->name('edit');
     Route::get('edit/getSchedule/{schedule}', [\App\Http\Controllers\SchedulesController::class,'getSchedule'])->name('getSchedule');
     Route::delete('destroy/{schedule}', [\App\Http\Controllers\SchedulesController::class,'destroy'])->name('destroy');
+    Route::delete('classDestroy/{schedule}', [\App\Http\Controllers\SchedulesController::class,'classDestroy'])->name('classDestroy');
     Route::put('update', [\App\Http\Controllers\SchedulesController::class,'update'])->name('update');
 });
 
@@ -108,5 +106,5 @@ Route::group([
 ], function (){
     Route::post('/import/{id}', [\App\Http\Controllers\ClassStudentController::class,'import'])->name('import');
     Route::post('store/{id}', [\App\Http\Controllers\ClassStudentController::class,'store'])->name('store');
-    Route::delete('/destroy/{id}', [\App\Http\Controllers\ClassStudentController::class,'destroy'])->name('destroy');
+    Route::delete('/destroy/{id}/{class}', [\App\Http\Controllers\ClassStudentController::class,'destroy'])->name('destroy');
 });
