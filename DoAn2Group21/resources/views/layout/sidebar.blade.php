@@ -52,7 +52,7 @@
                     </a>
                 </li>
 
-                @if ( auth()->user()->level == 3 || auth()->user()->level == 2 || auth()->user()->level == 4)
+                @if ( auth()->user()->level <=4 && auth()->user()->level >= 1)
                 <li class="sidebar-item {{'attendance' == request()->path() ? 'active' : ''}} ">
                     <a href="{{route('attendance.index')}}" class='sidebar-link'>
                         <i class="fas fa-calendar"></i>
