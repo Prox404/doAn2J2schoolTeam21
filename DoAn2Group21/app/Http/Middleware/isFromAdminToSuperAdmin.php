@@ -19,7 +19,7 @@ class isFromAdminToSuperAdmin
         if(!auth()->check()){
             return redirect('login');
         }
-        if (auth()->user()->level != 3 && auth()->user()->level != 4) {
+        if (auth()->user()->level < 3 || auth()->user()->level > 4) {
             return redirect('/');
         }
             

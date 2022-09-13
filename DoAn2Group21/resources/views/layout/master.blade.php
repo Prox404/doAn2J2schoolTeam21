@@ -81,6 +81,24 @@
    } 
    window.addEventListener('load', fadeOut);
 </script>
+<script>
+    $(function () {
+        $('#clearAll').click(function () {
+            if(confirm('Are you sure you want to clear all notifications?')){
+                $.ajax({
+                    url: "{{route('user.clearAllNotifications', auth()->user()->id)}}",
+                    type: "GET",
+                    success: function () {
+                        location.reload();
+                    },
+                    error: function(){
+                        alert('error!');
+                    }
+                });
+            }
+        });
+    });
+</script>
 </body>
 
 </html>

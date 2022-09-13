@@ -11,6 +11,11 @@
     {{-- css end --}}
 @endpush
 @section('content')
+    <style>
+        .hide{
+            display: none;
+        }
+    </style>
     <div class="page-content">
         @if (session()->has('message'))
             <div class="alert alert-success">
@@ -42,9 +47,7 @@
                                         <div class="form-group">
                                             <label for="subject">Môn học</label>
                                             <select class="choices form-select" id="subject" name="subject" disabled>
-                                                @foreach ($subject as $data)
-                                                    <option value="{{ $data->id }}">{{ $data->name }}</option>
-                                                @endforeach
+                                                <option value="{{ $current_subject->id }}">{{ $current_subject->name }}</option>
                                             </select>
                                         </div>
                                         <div class="form-group">
@@ -109,8 +112,16 @@
                                                 </option>
                                             </select>
                                         </div>
-
                                         <div class="form-group">
+                                            <label for="shift">Ca</label>
+                                            <select class="choices form-select" id="shift" name="shift">
+                                                <option placeholder>Chưa có ca</option>
+                                                <option value="1" @if ($class->shift == 1) selected @endif>Sáng</option>
+                                                <option value="2" @if ($class->shift == 2) selected @endif>
+                                                    Chiều</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group" id="teacherForm">
                                             <label for="teacher">Giảng viên</label>
                                             <select id="teacher" class="choices form-select" id="teacher" name="teacher">
                                                 <option placeholder>Chưa có giảng viên</option>
@@ -124,16 +135,7 @@
                                                 
                                             </select>
                                         </div>
-                                        {{-- {{$current_teacher}} --}}
-                                        <div class="form-group">
-                                            <label for="shift">Ca</label>
-                                            <select class="choices form-select" id="shift" name="shift">
-                                                <option placeholder>Chưa có ca</option>
-                                                <option value="1" @if ($class->shift == 1) selected @endif>Sáng</option>
-                                                <option value="2" @if ($class->shift == 2) selected @endif>
-                                                    Chiều</option>
-                                            </select>
-                                        </div>
+                                       
                                     </div>
                                     @if (!isset($class->schedule()->first()->id))
 
@@ -153,7 +155,7 @@
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card" id="editClassStudent">
                 <div class="card-header">
                     <h4 class="card-title">Danh sách học sinh lớp {{ $class->name }}</h4>
                 </div>
@@ -163,9 +165,9 @@
                             Lớp đã đủ số lượng sinh viên
                         @else
                             <button type="button" data-bs-toggle="modal" data-bs-target="#import-class-modal" 
-                            class="btn btn-primary me-1 ">Tải lên sinh viên</button>
+                            class="btn btn-primary me-1 "><i class="fas fa-file-upload"> </i> Tải lên sinh viên</button>
                             <button type="button" data-bs-toggle="modal" data-bs-target="#add-students-modal" 
-                            class="btn btn-success me-1 ">Thêm sinh viên</button>
+                            class="btn btn-success me-1 "><i class="fas fa-plus"> </i> Thêm sinh viên</button>
                         @endif
                     </div>
                     <table id="basic-datatable" class="table dt-responsive nowrap w-100">
@@ -199,7 +201,7 @@
                     </div>
                     <div class="modal-body">
                         <center>
-                            <a href="{{asset('files/excel/class-import-example.xlsx')}}" class="btn btn-primary mb-5">Tải file mẫu</a>
+                            <a href="{{asset('files/excel/class-import-example.xlsx')}}" class="btn btn-primary mb-5"><i class="fas fa-download"></i> Tải file mẫu</a>
                             <img class="mx-auto w-32 mb-5" src="https://user-images.githubusercontent.com/507615/54591670-ac0a0180-4a65-11e9-846c-e55ffce0fe7b.png" alt="no data" />
                             <div class="input-group mb-3 d-flex justify-content-center">
                                 <form action="{{ route('classStudent.import', $class->id) }}" method="POST"
@@ -244,7 +246,7 @@
 
                                 @csrf
 
-                                <div class="col-md-4">
+                                <div class="col-md-4 me-2">
                                     <div class="form-group row align-items-center">
                                         <div class="col-lg-2 col-3">
                                             <label class="col-form-label">ID</label>
@@ -255,7 +257,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-3 me-2">
                                     <div class="form-group row align-items-center">
                                         <div class="col-lg-2 col-3">
                                             <label class="col-form-label">Name</label>
@@ -279,6 +281,9 @@
                                 </div>
                             </form>
                         </div>
+                        <div class="mb-2">
+                            <p class="text-muted" id="numberOfStudents"></p>
+                        </div>
                         <table id="students-datatable" class="table dt-responsive nowrap w-100">
                             <thead>
                                 <tr>
@@ -291,6 +296,7 @@
                             <tbody>
                             </tbody>
                         </table>
+                        
                     </div>
                     <div class="modal-footer">
                         <button type="button" id="btn-submit" class="btn btn-primary">
@@ -313,6 +319,32 @@
     <script type="text/javascript"
         src="https://cdn.datatables.net/v/bs5/jq-3.6.0/dt-1.12.1/b-2.2.3/sl-1.4.0/datatables.min.js"></script>
     <script src="{{ asset('vendors/choices.js/choices.min.js') }}"></script>
+    <script>
+        checkShedule();
+        function checkShedule(){
+            let weekdays = $('#weekday').val();
+            let shift = $('#shift').val();
+
+            if (weekdays.length == 0 || weekdays == "Chưa có ngày"|| shift == null || shift.length == 'Chưa có ca') {
+                $('#btn-submit').addClass('hide');
+                $('#editClassStudent').addClass('hide');
+                $('#teacherForm').addClass('hide');
+            } else {
+                $('#btn-submit').removeClass('hide');
+                $('#editClassStudent').removeClass('hide');
+                $('#teacher').removeClass('hide');  
+            }
+        }
+
+        $('#weekday').change(function() {
+            checkShedule();
+        });
+        $('#shift').change(function() {
+            checkShedule();
+        });
+        
+
+    </script>
     <script>
         $(document).ready(function() {
             "use strict";
@@ -358,6 +390,7 @@
 
             let studentTable = $("#students-datatable").DataTable({
                 keys: !0,
+                lengthMenu: [20, 50, 100, 200, 500],
                 searching: false,
                 processing: true,
                 serverSide: true,
@@ -382,7 +415,10 @@
             });
 
             $('#students-datatable tbody').on('click', 'tr', function () {
+                let numberElementSelected = studentTable.rows('.selected').data().length + 1;
+                console.log(numberElementSelected);
                 $(this).toggleClass('selected');
+                $('#numberOfStudents').text(numberElementSelected + ' students selected');
             });
 
             $('#student-name').on('keyup', function () {
@@ -405,29 +441,33 @@
             });
 
             $('#btn-submit').click(function () {
-                $.ajax({
-                    type: "POST",
-                    url: "{!! route('classStudent.store', $class) !!}",
-                    data: {
-                        '_token': $('input[name=_token]').val(),
-                        'students': studentTable.rows('.selected').data().toArray(),
-                    },
-                    success: function (response) {
-                        if (response.status == 'success') {
-                            $('#students-datatable').DataTable().rows('.selected').remove().draw();
-                            studentTable.ajax.reload();
-                            $('#student-name').val('');
-                            $('#student-id').val('');
-                            $('#student-email').val('');
-                            alert(response.message);
-                        }else{
-                            alert('error' + response.message);
+                if(studentTable.rows('.selected').data().length > 15){
+                    alert('You can only select 15 students');
+                }else{
+                    $.ajax({
+                        type: "POST",
+                        url: "{!! route('classStudent.store', $class) !!}",
+                        data: {
+                            '_token': $('input[name=_token]').val(),
+                            'students': studentTable.rows('.selected').data().toArray(),
+                        },
+                        success: function (response) {
+                            if (response.status == 'success') {
+                                $('#students-datatable').DataTable().rows('.selected').remove().draw();
+                                studentTable.ajax.reload();
+                                $('#student-name').val('');
+                                $('#student-id').val('');
+                                $('#student-email').val('');
+                                alert(response.message);
+                            }else{
+                                alert('error' + response.message);
+                            }
+                        },
+                        error: function () {
+                            console.log('fail');
                         }
-                    },
-                    error: function () {
-                        console.log('fail');
-                    }
-                });
+                    });
+                }
             });
 
             $('#btn-close').click(function () {

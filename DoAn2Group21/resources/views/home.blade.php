@@ -173,11 +173,11 @@
                             </div>
                         </div>
                         <div class="col-12 col-lg-3">
-                            <div class="card">
+                            <div class="card pb-4">
                                 <div class="card-header">
                                     <h4 class="card-title">Lich học tuần</h4>
                                 </div>
-                                <div class="card-body" style="max-height: 643px">
+                                <div class="card-body" style="max-height: 539px; overflow-y: scroll;">
                                     @foreach ($scheduleOfWeek as $schedule)
                                         <div class="alert alert-primary">
                                             <strong>{{ $schedule['class'] }}</strong> <br>
@@ -546,11 +546,11 @@
                             </div>
                         </div>
                         <div class="col-12 col-lg-3">
-                            <div class="card">
+                            <div class="card pb-4">
                                 <div class="card-header">
                                     <h4 class="card-title">Lich học tuần</h4>
                                 </div>
-                                <div class="card-body" style="max-height: 643px">
+                                <div class="card-body" style="max-height: 539px; overflow-y: scroll;">
                                     @foreach ($scheduleOfWeek as $schedule)
                                         <div class="alert alert-primary">
                                             <strong>{{ $schedule['class'] }}</strong> <br>

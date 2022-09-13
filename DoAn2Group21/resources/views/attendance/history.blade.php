@@ -94,6 +94,39 @@ use Illuminate\Support\Carbon;
                 </div>
             </div>
 
+            @if($class->status == 3)
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Tổng kết nè bru</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-lg">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tên</th>
+                                        <th>Đã học</th>
+                                        <th>Điểm</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($allStudentPresent as $student)
+                                        <tr>
+                                            <td class="text-bold-500">{{$student['id']}}</td>
+                                            <td class="text-bold-500">{{$student['name']}}</td>
+                                            <td class="text-bold-500">{{$student['session']}}</td>
+                                            <td class="text-bold-500">{{$student['score']}}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            @endif
+            
+
             <div class="card">
                 <div class="card-header">
                     <h4 class="card-title">Biểu đồ nè</h4>
@@ -108,6 +141,13 @@ use Illuminate\Support\Carbon;
                     <h4 class="card-title">Số buổi học</h4>
                 </div>
                 <div class="card-body">
+                    <div class="badges mb-2">
+                        <center>
+                            <span class="badge bg-primary">Chưa học</span>
+                            <span class="badge bg-success">Đã học</span>
+                            <span class="badge bg-danger">Đã học nhưng chưa điểm danh</span>
+                        </center>
+                    </div>
                     <div id='calendar'></div>
                 </div>
             </div>
@@ -326,15 +366,15 @@ use Illuminate\Support\Carbon;
                             end: '{{ $end }}',
                             description: 'ALoo',
                             allDay: false,
-                            textColor: '#000',
+                            textColor: '#fff',
                             color: @if ($date->gt($now))
-                                '#F0F0FE'
+                                '#435ebe'
                             @else
                                 @if (!isset(
                                     $schedule->attendance()->where('schedule_id', $schedule->id)->first()->status))
-                                    '#FFF9EF'
+                                    '#dc3545'
                                 @else
-                                    '#d2ffe8'
+                                    '#198754'
                                 @endif
                             @endif
                         },

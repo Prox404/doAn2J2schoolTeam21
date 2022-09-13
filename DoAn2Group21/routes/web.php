@@ -21,10 +21,13 @@ Route::get('login', [AuthController::class, 'index'])->name('login')->middleware
 Route::post('custom-login', [AuthController::class, 'customLogin'])->name('login.custom');
 Route::get('signout', [AuthController::class, 'signOut'])->name('signout');
 
+Route::get('users/show', [\App\Http\Controllers\UsersController::class,'show'])->name('user.show')->middleware('requiredLogin');
+Route::put('users/storeUser/{id}', [\App\Http\Controllers\UsersController::class,'storeUser'])->name('user.storeUser')->middleware('requiredLogin');
+
 Route::group([
     'prefix'=>'users', 
     'as' => 'user.',
-    'middleware' => 'requiredLogin',
+    'middleware' => 'isFromAdminToSuperAdmin',
 ], function (){
     Route::get('/', [\App\Http\Controllers\UsersController::class,'index'])->name('index');
     Route::get('api', [\App\Http\Controllers\UsersController::class,'api'])->name('api');
@@ -35,6 +38,7 @@ Route::group([
     Route::post('advancedImport/', [\App\Http\Controllers\UsersController::class,'advancedImport'])->name('advancedImport');
     Route::post('/create', [\App\Http\Controllers\UsersController::class,'store'])->name('store');
     Route::get('get20Student/{id}', [\App\Http\Controllers\UsersController::class,'get20Student'])->name('get20Student');
+    Route::get('clearAllNotifications/{id}', [\App\Http\Controllers\UsersController::class,'clearAllNotifications'])->name('clearAllNotifications');
 });
 
 Route::group([
@@ -55,11 +59,7 @@ Route::group([
     'as' => 'class.',
     'middleware' => 'isFromTeacherToSuperAdmin',
 ], function (){
-    Route::get('/', [\App\Http\Controllers\ClassesController::class,'index'])->name('index');
     Route::get('test', [\App\Http\Controllers\ClassesController::class,'test'])->name('test');
-    Route::get('api', [\App\Http\Controllers\ClassesController::class,'api'])->name('api');
-    Route::get('userApi/{id}', [\App\Http\Controllers\ClassesController::class,'userApi'])->name('userApi');
-    Route::get('edit/{classes}', [\App\Http\Controllers\ClassesController::class,'edit'])->name('edit');
     Route::get('autoSchedule/{id}', [\App\Http\Controllers\ClassesController::class,'autoSchedule'])->name('autoSchedule');
     Route::put('update/{class}', [\App\Http\Controllers\ClassesController::class,'update'])->name('update');
     Route::delete('/destroy/{classes}', [\App\Http\Controllers\ClassesController::class,'destroy'])->name('destroy');
@@ -67,8 +67,21 @@ Route::group([
     Route::put('storeTeacher', [\App\Http\Controllers\ClassesController::class,'storeTeacher'])->name('storeTeacher');
     Route::post('/create', [\App\Http\Controllers\ClassesController::class,'store'])->name('store');
     Route::get('accept/{class}', [\App\Http\Controllers\ClassesController::class,'accept'])->name('accept');
+    Route::get('endClass/{class}', [\App\Http\Controllers\ClassesController::class,'endClass'])->name('endClass');
     Route::post('getLatestName', [\App\Http\Controllers\ClassesController::class,'getLatestName'])->name('getLatestName');
     Route::get('checkInformation/{id}', [\App\Http\Controllers\ClassesController::class,'checkInformation'])->name('checkInformation');
+});
+
+Route::group([
+    'prefix'=>'classes', 
+    'as' => 'class.',
+    'middleware' => 'requiredLogin',
+], function (){
+    Route::get('/', [\App\Http\Controllers\ClassesController::class,'index'])->name('index');
+    Route::get('api', [\App\Http\Controllers\ClassesController::class,'api'])->name('api');
+    Route::get('userApi/{id}', [\App\Http\Controllers\ClassesController::class,'userApi'])->name('userApi');
+    Route::get('edit/{classes}', [\App\Http\Controllers\ClassesController::class,'edit'])->name('edit');
+    Route::get('show/{id}', [\App\Http\Controllers\ClassesController::class,'show'])->name('show');
 });
 
 
@@ -76,7 +89,7 @@ Route::get('attendances/', [\App\Http\Controllers\AttendanceController::class,'i
 Route::group([
     'prefix'=>'attendance', 
     'as' => 'attendance.',
-    'middleware' => 'isFromTeacherToSuperAdmin',
+    'middleware' => 'requiredLogin',
 ], function (){
     Route::get('api', [\App\Http\Controllers\AttendanceController::class,'api'])->name('api');
     Route::get('history/{class}', [\App\Http\Controllers\AttendanceController::class,'history'])->name('history');
@@ -96,7 +109,7 @@ Route::group([
     Route::get('edit/getSchedule/{schedule}', [\App\Http\Controllers\SchedulesController::class,'getSchedule'])->name('getSchedule');
     Route::delete('destroy/{schedule}', [\App\Http\Controllers\SchedulesController::class,'destroy'])->name('destroy');
     Route::delete('classDestroy/{schedule}', [\App\Http\Controllers\SchedulesController::class,'classDestroy'])->name('classDestroy');
-    Route::put('update', [\App\Http\Controllers\SchedulesController::class,'update'])->name('update');
+    Route::get('changeSession/{class_id}/{schedule_id}', [\App\Http\Controllers\SchedulesController::class,'changeSession'])->name('changeSession');
 });
 
 Route::group([

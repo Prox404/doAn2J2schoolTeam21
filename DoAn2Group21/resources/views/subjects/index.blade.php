@@ -1,6 +1,6 @@
 @extends('layout.master')
 @push('title')
-<title>Subjects</title>
+    <title>Subjects</title>
 @endpush
 @push('css')
     {{-- css start --}}
@@ -23,7 +23,8 @@
                 </div>
                 <div class="card-body">
                     <div class="col-12 d-flex justify-content-start mb-3">
-                        <a href="#" type="button" class="btn btn-success me-1 " data-bs-toggle="modal" data-bs-target="#addSubjectModal" >Thêm môn học</a>
+                        <a href="#" type="button" class="btn btn-success me-1 " data-bs-toggle="modal"
+                            data-bs-target="#addSubjectModal"><i class="fas fa-plus"> </i>Thêm môn học</a>
                     </div>
 
                     <table id="basic-datatable" class="table dt-responsive nowrap w-100">
@@ -53,7 +54,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Thêm môn học</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -69,13 +70,13 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="start-date-vertical">Start Date</label>
-                                        <input type="date" id="start-date-vertical" class="form-control" name="start_date"
-                                            placeholder="Start Date">
+                                        <input type="date" id="start-date-vertical" class="form-control"
+                                            name="start_date" placeholder="Start Date">
                                     </div>
                                     <div class="form-group">
                                         <label for="end-date-vertical">Numbers Sessions</label>
-                                        <input type="number" id="end-date-vertical" class="form-control" name="class_sessions"
-                                            placeholder="Numbers Sessions">
+                                        <input type="number" id="end-date-vertical" class="form-control"
+                                            name="class_sessions" placeholder="Numbers Sessions">
                                     </div>
                                 </div>
                                 <div class="col-12 d-flex justify-content-end">

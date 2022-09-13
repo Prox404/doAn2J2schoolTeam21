@@ -26,21 +26,20 @@ class SchedulesController extends Controller
 
     public function index()
     {
-        if(auth()->user()->level == 1 || auth()->user()->level == 2){
+        if (auth()->user()->level == 1 || auth()->user()->level == 2) {
             $id = auth()->user()->id;
 
             $class_id = ClassStudent::where('user_id', $id)
-            ->distinct('class_id')
-            ->get('class_id');
+                ->distinct('class_id')
+                ->get('class_id');
 
             $schedules = Schedules::whereIn('class_id', $class_id)
-            ->leftJoin('classes', 'schedules.class_id', 'classes.id')
-            ->get();
-            
+                ->leftJoin('classes', 'schedules.class_id', 'classes.id')
+                ->get();
+
             return view('schedules.index', [
                 'schedules' => $schedules,
             ]);
-
         }
         return view('schedules.index');
     }
@@ -77,7 +76,12 @@ class SchedulesController extends Controller
     public function edit($id)
     {
         $schedules = Schedules::query()
-            ->addSelect('schedules.*', 'classes.name as class_name', 'subjects.name as subject_name')
+            ->addSelect(
+                'schedules.*',
+                'classes.name as class_name',
+                'subjects.name as subject_name',
+                'classes.shift as shift'
+            )
             ->where('class_id', $id)
             ->leftJoin('classes', 'schedules.class_id', 'classes.id')
             ->leftJoin('subjects', 'classes.subject_id', 'subjects.id')
@@ -86,34 +90,43 @@ class SchedulesController extends Controller
 
         return view('schedules.edit', [
             'schedules' => $schedules,
+            'class_id' => $id,
         ]);
+
+        // return $schedules;
     }
 
     public function destroy(Schedules $schedule)
     {
         if (auth()->user()->level > 2) {
-            if(Attendance::where('schedule_id', $schedule->id)->count() > 0){
-                return redirect()->route('schedule.edit', $schedule->id)->with('message', 'Cannot delete, it already enable !!!');
+            $class_id = $schedule->class_id;
+            $class = Classes::find($class_id);
+            if($class->status == 3){
+                return redirect()->route('schedule.edit', $class_id)->with('message', 'Class has been finished');
             }else{
-                $schedule->delete();
-                return redirect()->route('schedule.edit', $schedule->class_id)->with('success', 'Schedule deleted successfully');
-                // return "deleted";
+                if (Attendance::where('schedule_id', $schedule->id)->count() > 0) {
+                    return redirect()->route('schedule.edit', $schedule->id)->with('message', 'Cannot delete, it already enable !!!');
+                } else {
+                    $schedule->delete();
+                    return redirect()->route('schedule.edit', $schedule->class_id)->with('success', 'Schedule deleted successfully');
+                    // return "deleted";
+                }
             }
-        }  
+        }
     }
-    
+
     public function classDestroy($id)
     {
         $all_schedule = Schedules::where('class_id', $id)->get('id');
         if (auth()->user()->level > 2) {
-            if(Attendance::whereIn('schedule_id', $all_schedule)->count() > 0){
+            if (Attendance::whereIn('schedule_id', $all_schedule)->count() > 0) {
                 return redirect()->route('schedule.edit', $id)->with('message', 'Cannot delete, it already enable !!!');
-            }else{
+            } else {
                 Schedules::whereIn('id', $all_schedule)->delete();
                 return redirect()->route('schedule.edit', $id)->with('success', 'Schedule deleted successfully');
                 // return "deleted";
             }
-        }  
+        }
     }
 
     public function getSchedule($id)
@@ -123,9 +136,32 @@ class SchedulesController extends Controller
         return $schedule;
     }
 
-    public function update(Request $request)
+    public function changeSession($class_id, $schedule_id)
     {
+        $class = Classes::find($class_id);
+        if ($class->status == 3) {
+            return redirect()->route('schedule.edit', $class_id)->with('message', 'Schedule changed failed!, Class has been finished !');
+        } else {
+            $class_weekdays = $class->weekdays;
+            $last_date = Schedules::where('class_id', $class_id)->orderBy('date', 'desc')->first('date');
+            $last_date = $last_date->date;
+            $current = Carbon::parse($last_date);
+            $count = 0;
+            $date_changed = true;
+            while ($count < 365 && $date_changed) {
+                $current = $current->addDays(1);
+                $day = $current->isoFormat('E');
+                if (in_array($day, $class_weekdays)) {
+                    Schedules::where('id', $schedule_id)->update([
+                        'date' => $current->format('Y-m-d'),
+                    ]);
+                    return redirect()->route('schedule.edit', $class_id)->with('message', 'Schedule changed from ' . $last_date . ' to ' . $current->format('Y-m-d'));
+                    $date_changed = false;
+                }
 
-        return redirect()->route('schedule.edit')->with('message', 'Success update !!!');
+                $count++;
+            }
+            return redirect()->route('schedule.edit', $class_id)->with('message', 'Schedule changed failed! ');
+        }
     }
 }

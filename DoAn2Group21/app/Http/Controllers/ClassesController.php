@@ -29,155 +29,301 @@ class ClassesController extends Controller
 
     public function test()
     {
-        return view('classes.test');
+        return 1;
     }
 
     public function index()
     {
-        $subject = new Subjects();
-        $subject_data = $subject::query()->get([
-            'id',
-            'name',
-        ]);
-        return view('classes.index', [
-            'subject' => $subject_data,
-        ]);
+        if (auth()->user()->level >= 3 && auth()->user()->level <= 4) {
+            $subject = new Subjects();
+            $subject_data = $subject::query()->get([
+                'id',
+                'name',
+            ]);
+            return view('classes.index', [
+                'subject' => $subject_data,
+            ]);
+        }
+        if (auth()->user()->level >= 1 && auth()->user()->level <= 2) {
+            return view('classes.index');
+        }
     }
 
     public function api()
     {
-        $query = Classes::query()
-            ->addSelect('classes.*')
-            ->addSelect('subjects.name as subject_name')
-            ->leftJoin('subjects', 'classes.subject_id', 'subjects.id');
+        if (auth()->user()->level >= 3 && auth()->user()->level <= 4) {
+            $query = Classes::query()
+                ->addSelect('classes.*')
+                ->addSelect('subjects.name as subject_name')
+                ->leftJoin('subjects', 'classes.subject_id', 'subjects.id');
 
-        return DataTables::of($query)
-            ->editColumn('weekdays', function ($object) {
-                if (!empty($object->weekdays)) {
-                    $weekdayName = [];
-                    foreach ($object->weekdays as $weekday) {
-                        switch ($weekday) {
-                            case 1:
-                                $weekdayName[] = 'T2';
-                                break;
-                            case 2:
-                                $weekdayName[] = 'T3';
-                                break;
-                            case 3:
-                                $weekdayName[] = 'T4';
-                                break;
-                            case 4:
-                                $weekdayName[] = 'T5';
-                                break;
-                            case 5:
-                                $weekdayName[] = 'T6';
-                                break;
-                            case 6:
-                                $weekdayName[] = 'T7';
-                                break;
-                            case 7:
-                                $weekdayName[] = 'CN';
-                                break;
+            return DataTables::of($query)
+                ->editColumn('weekdays', function ($object) {
+                    if (!empty($object->weekdays)) {
+                        $weekdayName = [];
+                        foreach ($object->weekdays as $weekday) {
+                            switch ($weekday) {
+                                case 1:
+                                    $weekdayName[] = 'T2';
+                                    break;
+                                case 2:
+                                    $weekdayName[] = 'T3';
+                                    break;
+                                case 3:
+                                    $weekdayName[] = 'T4';
+                                    break;
+                                case 4:
+                                    $weekdayName[] = 'T5';
+                                    break;
+                                case 5:
+                                    $weekdayName[] = 'T6';
+                                    break;
+                                case 6:
+                                    $weekdayName[] = 'T7';
+                                    break;
+                                case 7:
+                                    $weekdayName[] = 'CN';
+                                    break;
+                            }
                         }
-                    }
-                    return implode(', ', $weekdayName);
-                } else {
-                    return 'Chưa cập nhật';
-                }
-            })
-            ->editColumn('shift', function ($object) {
-                if (!empty($object->shift)) {
-                    if ($object->shift == 1) {
-                        return 'Sáng';
+                        return implode(', ', $weekdayName);
                     } else {
-                        return 'Chiều';
+                        return 'Chưa cập nhật';
                     }
-                } else {
-                    return 'Chưa cập nhật';
-                }
-            })
-            ->addColumn('numberOfLessonsLearned', function ($object) {
-                $schedules = Schedules::where('class_id', $object->id)->get();
-                // $attendance = 0;
-                $schedule_id = [];
-                foreach ($schedules as $schedule) {
-                    $schedule_id[] = $schedule->id;
-                }
-                $attendance = Attendance::whereIn('schedule_id', $schedule_id)->distinct()->get('schedule_id')->count();
-                return $attendance . '/' . count($schedule_id);
-            })
-            ->addColumn('expectedEndDate', function ($object) {
-                $schedules = Schedules::where('class_id', $object->id)->get();
-                // $attendance = 0;
-                $schedule_id = [];
-                foreach ($schedules as $schedule) {
-                    $schedule_id[] = $schedule->id;
-                }
-                $attendance = Attendance::whereIn('schedule_id', $schedule_id)->distinct()->get('schedule_id');
-                $remainingDays = count($schedule_id) - count($attendance);
-                $lastSchedule = $attendance->last();
-                $lastScheduleDate = Schedules::where('id', $lastSchedule['schedule_id'])->orderBy('date', 'desc')->first()['date'];
-                $currentDate = Carbon::parse($lastScheduleDate)->addDays(1);
-
-                $weekdays = $object->weekdays;
-
-                $numberFailDate = 0;
-                $numberSuccessDate = 0;
-                while ($numberFailDate < 365) {
-                    if ($numberSuccessDate <= $remainingDays) {
-                        if (in_array($currentDate->isoFormat('E'), $weekdays)) {
-                            $numberSuccessDate++;
+                })
+                ->editColumn('shift', function ($object) {
+                    if (!empty($object->shift)) {
+                        if ($object->shift == 1) {
+                            return 'Sáng';
                         } else {
-                            $numberFailDate++;
+                            return 'Chiều';
                         }
-                        $currentDate->addDays(1);
                     } else {
-                        break;
+                        return 'Chưa cập nhật';
                     }
-                }
+                })
+                ->addColumn('numberOfLessonsLearned', function ($object) {
+                    $schedules = Schedules::where('class_id', $object->id)->get();
+                    // $attendance = 0;
+                    $schedule_id = [];
+                    foreach ($schedules as $schedule) {
+                        $schedule_id[] = $schedule->id;
+                    }
+                    $attendance = Attendance::whereIn('schedule_id', $schedule_id)->distinct()->get('schedule_id')->count();
+                    return $attendance . '/' . count($schedule_id);
+                })
+                ->addColumn('expectedEndDate', function ($object) {
+                    $schedules = Schedules::where('class_id', $object->id)->get();
+                    // $attendance = 0;
+                    $schedule_id = [];
+                    foreach ($schedules as $schedule) {
+                        $schedule_id[] = $schedule->id;
+                    }
+                    $attendance = Attendance::whereIn('schedule_id', $schedule_id)->distinct()->get('schedule_id');
+                    $remainingDays = count($schedule_id) - count($attendance);
+                    $lastSchedule = $attendance->last();
+                    $lastScheduleDate = Schedules::where('id', $lastSchedule['schedule_id'])->orderBy('date', 'desc')->first()['date'];
+                    $currentDate = Carbon::parse($lastScheduleDate)->addDays(1);
 
-                return $currentDate->format('Y-m-d');
-                // return $attendance;
-            })
-            ->addColumn('teacher', function ($object) {
-                $teacher = ClassStudent::query()
-                    ->addSelect('users.name as teacher')
-                    ->leftJoin('users', 'class_students.user_id', 'users.id')
-                    ->where('class_students.class_id', $object->id)
-                    ->where('users.level', 2)
-                    ->first();
+                    $weekdays = $object->weekdays;
 
-                if (!empty($teacher->teacher)) {
-                    return [
-                        'name' => $teacher,
-                        'status' => 1,
-                    ];
-                } else {
-                    return [
-                        'href' => route('class.addTeacher', $object),
-                        'status' => 404,
-                    ];
-                }
-            })
-            ->addColumn('edit', function ($object) {
-                return route('class.edit', $object);
-            })
-            ->addColumn('destroy', function ($object) {
-                return route('class.destroy', $object);
-            })
-            ->addColumn('accept', function ($object) {
-                if ($object->status == 1) {
-                    return [
-                        'href' => route('class.accept', $object),
-                        'status' => 404,
-                    ];
-                } else {
-                    return [
-                        'status' => 1,
-                    ];
-                }
-            })
-            ->make(true);
+                    $numberFailDate = 0;
+                    $numberSuccessDate = 0;
+                    while ($numberFailDate < 365) {
+                        if ($numberSuccessDate <= $remainingDays) {
+                            if (in_array($currentDate->isoFormat('E'), $weekdays)) {
+                                $numberSuccessDate++;
+                            } else {
+                                $numberFailDate++;
+                            }
+                            $currentDate->addDays(1);
+                        } else {
+                            break;
+                        }
+                    }
+
+                    return $currentDate->format('Y-m-d');
+                    // return $attendance;
+                })
+                ->addColumn('teacher', function ($object) {
+                    $teacher = ClassStudent::query()
+                        ->addSelect('users.name as teacher')
+                        ->leftJoin('users', 'class_students.user_id', 'users.id')
+                        ->where('class_students.class_id', $object->id)
+                        ->where('users.level', 2)
+                        ->first();
+
+                    if (!empty($teacher->teacher)) {
+                        return [
+                            'name' => $teacher,
+                            'status' => 1,
+                        ];
+                    } else {
+                        return [
+                            'href' => route('class.addTeacher', $object),
+                            'status' => 404,
+                        ];
+                    }
+                })
+                ->addColumn('edit', function ($object) {
+                    if ($object->status == 1) {
+                        return [
+                            'href' => route('class.edit', $object),
+                            'status' => 200,
+                        ];
+                    }else {
+                        return [
+                            'status' => 202,
+                        ];
+                    }
+                })
+                ->addColumn('destroy', function ($object) {
+                    if ($object->status == 1 || $object->status == 2) {
+                        return [
+                            'href' => route('class.destroy', $object),
+                            'status' => 200,
+                        ];
+                    }else {
+                        return [
+                            'status' => 202,
+                        ];
+                    }
+                    
+                })
+                ->addColumn('accept', function ($object) {
+                    
+                    if ($object->status == 1) {
+                        return [
+                            'href' => route('class.accept', $object),
+                            'status' => 200,
+                        ];
+                    } else if($object->status == 2){
+                        return [
+                            'href' => route('class.endClass', $object),
+                            'status' => 201,
+                        ];
+                    }else {
+                        return [
+                            'status' => 202,
+                        ];
+                    }
+                })
+
+                ->make(true);
+        }
+        if (auth()->user()->level >= 1 && auth()->user()->level <= 2) {
+            $user_id = auth()->user()->id;
+            $all_class_id = ClassStudent::where('user_id', $user_id)->get('class_id');
+            $query = Classes::query()
+                ->addSelect('classes.*')
+                ->addSelect('subjects.name as subject_name')
+                ->whereIn('classes.id', $all_class_id)
+                ->where('classes.status', 2)
+                ->leftJoin('subjects', 'classes.subject_id', 'subjects.id')
+                ->get();
+            return DataTables::of($query)
+                ->editColumn('weekdays', function ($object) {
+                    if (!empty($object->weekdays)) {
+                        $weekdayName = [];
+                        foreach ($object->weekdays as $weekday) {
+                            switch ($weekday) {
+                                case 1:
+                                    $weekdayName[] = 'T2';
+                                    break;
+                                case 2:
+                                    $weekdayName[] = 'T3';
+                                    break;
+                                case 3:
+                                    $weekdayName[] = 'T4';
+                                    break;
+                                case 4:
+                                    $weekdayName[] = 'T5';
+                                    break;
+                                case 5:
+                                    $weekdayName[] = 'T6';
+                                    break;
+                                case 6:
+                                    $weekdayName[] = 'T7';
+                                    break;
+                                case 7:
+                                    $weekdayName[] = 'CN';
+                                    break;
+                            }
+                        }
+                        return implode(', ', $weekdayName);
+                    } else {
+                        return 'Chưa cập nhật';
+                    }
+                })
+                ->editColumn('shift', function ($object) {
+                    if (!empty($object->shift)) {
+                        if ($object->shift == 1) {
+                            return 'Sáng';
+                        } else {
+                            return 'Chiều';
+                        }
+                    } else {
+                        return 'Chưa cập nhật';
+                    }
+                })
+                ->addColumn('teacher', function ($object) {
+                    $teacher = ClassStudent::query()
+                        ->addSelect('users.name as teacher')
+                        ->leftJoin('users', 'class_students.user_id', 'users.id')
+                        ->where('class_students.class_id', $object->id)
+                        ->where('users.level', 2)
+                        ->first();
+
+                    return $teacher->teacher;
+                })
+                ->addColumn('numberOfLessonsLearned', function ($object) {
+                    $schedules = Schedules::where('class_id', $object->id)->get();
+                    // $attendance = 0;
+                    $schedule_id = [];
+                    foreach ($schedules as $schedule) {
+                        $schedule_id[] = $schedule->id;
+                    }
+                    $attendance = Attendance::whereIn('schedule_id', $schedule_id)->distinct()->get('schedule_id')->count();
+                    return $attendance . '/' . count($schedule_id);
+                })
+                ->addColumn('expectedEndDate', function ($object) {
+                    $schedules = Schedules::where('class_id', $object->id)->get();
+                    // $attendance = 0;
+                    $schedule_id = [];
+                    foreach ($schedules as $schedule) {
+                        $schedule_id[] = $schedule->id;
+                    }
+                    $attendance = Attendance::whereIn('schedule_id', $schedule_id)->distinct()->get('schedule_id');
+                    $remainingDays = count($schedule_id) - count($attendance);
+                    $lastSchedule = $attendance->last();
+                    $lastScheduleDate = Schedules::where('id', $lastSchedule['schedule_id'])->orderBy('date', 'desc')->first()['date'];
+                    $currentDate = Carbon::parse($lastScheduleDate)->addDays(1);
+
+                    $weekdays = $object->weekdays;
+
+                    $numberFailDate = 0;
+                    $numberSuccessDate = 0;
+                    while ($numberFailDate < 365) {
+                        if ($numberSuccessDate <= $remainingDays) {
+                            if (in_array($currentDate->isoFormat('E'), $weekdays)) {
+                                $numberSuccessDate++;
+                            } else {
+                                $numberFailDate++;
+                            }
+                            $currentDate->addDays(1);
+                        } else {
+                            break;
+                        }
+                    }
+
+                    return $currentDate->format('Y-m-d');
+                    // return $attendance;
+                })
+                ->addColumn('show', function ($object) {
+                    return route('class.show', $object);
+                })
+                ->make(true);
+        }
     }
 
     public function addTeacher($id)
@@ -261,11 +407,17 @@ class ClassesController extends Controller
     {
         $class = Classes::find($id);
 
-        $subject = new Subjects();
-        $subject_data = $subject::query()->get([
-            'id',
-            'name',
-        ]);
+        // $subject_data = Subjects::query()->get([
+        //     'id',
+        //     'name',
+        // ]);
+
+        $current_subject = Subjects::query()
+            ->where('id', $class->subject_id)
+            ->get([
+                'id',
+                'name',
+            ]);
 
         $teacher = ClassStudent::query()
             ->select('users.id as id', 'users.name as name')
@@ -310,11 +462,13 @@ class ClassesController extends Controller
             'class' => $class,
             'current_teacher' => $teacher,
             'teachers' => $teachers,
-            'subject' => $subject_data,
+            // 'subject' => $subject_data,
+            'current_subject' => $current_subject[0],
             'weekdays' => $weekdays,
             'numberOfStudents' => $numberOfStudents,
         ]);
 
+        // return $current_subject[0];
         // return $teacher;
     }
 
@@ -369,7 +523,8 @@ class ClassesController extends Controller
 
     public function autoSchedule($id)
     {
-        $class = Classes::find($id)->with('subjects')->first();
+        $class = Classes::where('id', $id)
+            ->with('subjects')->first();
 
         $weekdays = $class->weekdays;
         $subject = $class->subjects;
@@ -442,6 +597,28 @@ class ClassesController extends Controller
         ]);
     }
 
+    public function endClass($id)
+    {
+        if (auth()->user()->level >= 3 && auth()->user()->level <= 4){
+            $schedules = Schedules::where('class_id', $id)->get();
+            $schedule_id = [];
+            foreach ($schedules as $schedule) {
+                $schedule_id[] = $schedule->id;
+            }
+            $attendance = Attendance::whereIn('schedule_id', $schedule_id)->distinct()->get('schedule_id')->count();
+            // return $attendance . '/' . count($schedule_id);
+            if(count($schedule_id) / $attendance < 2){
+                $class = Classes::find($id);
+                $class->status = 3;
+                $class->save();
+                return redirect()->route('class.index')->with('message', 'Success end class !!!');
+            }else{
+                return redirect()->route('class.index')->with('message', 'Can not end class, because attendance is not enough !!!');
+            }
+
+        }
+    }
+
     public function checkInformation($id)
     {
         $classFlag = true;
@@ -491,9 +668,9 @@ class ClassesController extends Controller
             } else {
                 Classes::where('id', $id)->update(['status' => 2]);
                 return ([
-                        'status' => 'success',
-                        'message' => 'Thành công !',
-                    ]
+                    'status' => 'success',
+                    'message' => 'Thành công !',
+                ]
                 );
             }
         }
@@ -519,5 +696,24 @@ class ClassesController extends Controller
         } else {
             return $subject_name->name . '1';
         }
+    }
+
+    public function show($id)
+    {
+        $classStudent = ClassStudent::query()
+            ->addSelect('users.name', 'users.id', 'users.birthday','users.level', 'users.email')
+            ->where('class_id', $id)
+            ->leftJoin('users', 'users.id', 'class_students.user_id');
+        $class_info = Classes::where('id', $id)
+            ->with('subjects')
+            ->first();
+        $teacher = $classStudent->where('users.level', 1)->first();
+        $class_info['teacher'] = $teacher->name;
+        $student = $classStudent->where('users.level', 1)->paginate(15);
+        return view('classes.show', [
+            'class_info' => $class_info,
+            'students' => $student,
+        ]);
+        // return $student;
     }
 }

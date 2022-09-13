@@ -34,9 +34,9 @@
                 <div class="card-body">
                     <div class="col-12 d-flex justify-content-start mb-3">
                         <button type="button" data-bs-toggle="modal" data-bs-target="#import-user" 
-                        class="btn btn-primary me-1 ">Thêm sinh viên</button>
+                        class="btn btn-primary me-1 "><i class="fas fa-file-upload"> </i> Tải lên sinh viên</button>
                         <button type="button" data-bs-toggle="modal" data-bs-target="#add-user-modal"
-                         class="btn btn-success me-1 ">Thêm thủ công</button>
+                         class="btn btn-success me-1 "><i class="fas fa-plus"> </i> Thêm người dùng</button>
                     </div>
 
                     <table id="basic-datatable" class="table dt-responsive nowrap w-100">
@@ -63,7 +63,7 @@
                 <div class="modal-dialog modal-dialog-scrollable" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">Thêm sinh viên</h5>
+                            <h5 class="modal-title">Thêm người dùng</h5>
                             <button type="button" class="close rounded-pill" data-bs-dismiss="modal" aria-label="Close">
                                 <i data-feather="x"></i>
                             </button>
@@ -71,7 +71,7 @@
                         <div class="modal-body">
                             <center>
                                 <a href="{{ asset('files/excel/user-import-example.xlsx') }}"
-                                    class="btn btn-primary mb-5">Tải file mẫu</a>
+                                    class="btn btn-primary mb-5"><i class="fas fa-file-upload"> </i>Tải file mẫu</a>
                                 <img class="mx-auto w-32 mb-5"
                                     src="https://user-images.githubusercontent.com/507615/54591670-ac0a0180-4a65-11e9-846c-e55ffce0fe7b.png"
                                     alt="no data" />
@@ -135,10 +135,15 @@
                                             <div class="form-group">
                                                 <label for="subject">Chức vụ</label>
                                                 <select class="choices form-select" id="level" name="level">
-                                                    <option value="1">Sinh viên</option>
-                                                    <option value="2">Giảng viên</option>
-                                                    <option value="3">Giáo vụ</option>
-                                                    <option value="4">Super Admin</option>
+                                                    @if (auth()->user()->level == 3)
+                                                        <option value="1">Sinh viên</option>
+                                                        <option value="2">Giảng viên</option>
+                                                    @endif
+                                                    @if (auth()->user()->level == 4)
+                                                        <option value="1">Sinh viên</option>
+                                                        <option value="2">Giảng viên</option>
+                                                        <option value="3">Giáo vụ</option>
+                                                    @endif
                                                 </select>
                                             </div>
                                         </div>

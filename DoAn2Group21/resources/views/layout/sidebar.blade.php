@@ -28,7 +28,7 @@
                         </a>
                     </li>
                 @endif
-                @if ( auth()->user()->level == 3 || auth()->user()->level == 4)  
+                @if ( auth()->user()->level >= 1 || auth()->user()->level <= 4)  
                     <li class="sidebar-item {{'classes' == request()->path() ? 'active' : ''}}">
                         <a href="{{route('class.index')}}" class='sidebar-link'>
                             <i class="fas fa-graduation-cap"></i>
