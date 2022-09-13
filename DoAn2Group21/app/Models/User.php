@@ -22,6 +22,9 @@ class User extends Authenticatable
         'birthday',
         'email',
         'password',
+        'currentPassword',
+        'rePassword',
+        'isChangePassword',
         'level',
         'added_by'
     ];
@@ -34,6 +37,9 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'currentPassword',
+        'rePassword',
+        'isChangePassword',
     ];
 
     /**
@@ -48,5 +54,10 @@ class User extends Authenticatable
     public function attendance()
     {
         return $this->hasMany('App\Models\Attendance', 'user_id');
+    }
+
+    public function notification()
+    {
+        return $this->hasMany('App\Models\Notification', 'user_id');
     }
 }
