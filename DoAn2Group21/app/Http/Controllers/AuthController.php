@@ -30,9 +30,6 @@ class AuthController extends Controller
    
         $credentials = $request->only('email', 'password');
         if (Auth::attempt($credentials, $request->filled('remember'))) {
-            $user = User::query()
-                ->where('email', $request->get('email'))
-                ->firstOrFail();
             return redirect()->intended('dashboard')
                         ->withSuccess('Signed in');
         }
