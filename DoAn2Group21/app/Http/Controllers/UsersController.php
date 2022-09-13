@@ -10,11 +10,15 @@ use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel as Excel;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Requests\User\StoreRequest;
+use App\Http\Requests\User\updateUserRequest as UserUpdateUserRequest;
 use App\Models\Classes;
 use App\Models\ClassStudent;
+use App\Models\Notification;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View as View;
+use Illuminate\Validation\Rule;
 use Yajra\DataTables\DataTables;
 
 class UsersController extends Controller
@@ -36,7 +40,8 @@ class UsersController extends Controller
 
     public function api()
     {
-        return DataTables::of(User::query())
+        if (auth()->user()->level == 4) {
+            return DataTables::of(User::query()->where('level', '<', 4))
             ->editColumn('created_at', function ($object) {
                 return $object->created_at->format('Y/m/d');
             })
@@ -57,12 +62,58 @@ class UsersController extends Controller
                 return route('user.destroy', $object);
             })
             ->make(true);
+        }
+        if (auth()->user()->level == 3){
+            return DataTables::of(User::query()->where('level', '<', 3))
+            ->editColumn('created_at', function ($object) {
+                return $object->created_at->format('Y/m/d');
+            })
+            ->editColumn('level', function ($object) {
+                if ($object->level == 1)
+                    return 'Sinh viên';
+                else if ($object->level == 2)
+                    return 'Giảng viên';
+                else if ($object->level == 3)
+                    return 'Giáo vụ';
+                else if ($object->level == 4)
+                    return 'Super Admin';
+            })
+            ->addColumn('edit', function ($object) {
+                return route('user.edit', $object);
+            })
+            ->addColumn('destroy', function ($object) {
+                return route('user.destroy', $object);
+            })
+            ->make(true);
+        }
+        
     }
 
     public function get20Student($id)
     {
-        $userInClass = ClassStudent::where('class_id', $id)->get('user_id');
-        $user = User::where('level', 1)->whereNotIn('id', $userInClass)->limit(20);
+        $class_student = ClassStudent::where('class_id', $id);
+        $class = Classes::find($id);
+        $classWeekday = $class->weekdays;
+        $classShift = $class->shift;
+
+        $all_invalid_class = Classes::query()
+            ->addSelect('classes.*')
+            ->orWhere(function ($query) use ($classWeekday, $classShift) {
+                foreach ($classWeekday as $weekday) {
+                    $query->orWhereJsonContains('weekdays', $weekday)
+                        ->where('shift', $classShift);
+                }
+            })
+            ->get('id');
+        $user_not_valid = ClassStudent::query()
+            ->addSelect('class_students.user_id')
+            ->whereIn('class_id', $all_invalid_class)
+            ->get('user_id');
+        $userInClass = $class_student->get('user_id');
+        $user = User::where('level', 1)
+            ->whereNotIn('id', $userInClass)
+            ->whereNotIn('id', $user_not_valid)
+            ->limit(20);
         if(!empty($_GET['name'])){
             $user = $user->where('name', 'like', '%'.$_GET['name'].'%');
         }
@@ -77,6 +128,7 @@ class UsersController extends Controller
         }
         $user = $user->get();
         return DataTables::of($user)->make(true);
+        // return 1;
     }
 
     public function excelToDateTime($value)
@@ -275,5 +327,56 @@ class UsersController extends Controller
             // return "deleted";
         }
         
+    }
+
+    public function clearAllNotifications($id)
+    {
+        Notification::where('user_id', $id)->delete();
+    }
+
+    public function show()
+    {
+        $user = auth()->user();
+        return view('users.show')->with('user', $user);
+    }
+
+    public function storeUser(Request $request, $id)
+    {
+        $user = User::find($id);
+        if(!empty($request->isChangePassword)){
+            
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => ['required',Rule::unique('users')->ignore($user->id), 'email', 'string', 'max:255'],
+                'birthday' => 'required|date',
+                'isChangePassword' => '',
+                'currentPassword' => 'required|string',
+                'password' => 'required|string',
+                'rePassword' => 'required|string',
+            ]);
+            // return $request->all();
+            if (Hash::check($request->currentPassword, $user->password)) {
+                $user->name = $request->name;
+                $user->email = $request->email;
+                $user->birthday = $request->birthday;
+                $user->password = bcrypt($request->password);
+                $user->save();
+                return redirect()->back()->with('message', 'Success!!!');
+            } else {
+                return redirect()->back()->with('message', 'Mật khẩu hiện tại không đúng !');
+            }
+        }else{
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => ['required',Rule::unique('users')->ignore($user->id), 'email', 'string', 'max:255'],
+                'birthday' => 'required|date',
+            ]);
+            $user->update([
+                'name' => $request->name,
+                'email' => $request->email,
+                'birthday' => $request->birthday
+            ]);
+        }
+        return redirect()->back()->with('message', 'Success!!!');
     }
 }
