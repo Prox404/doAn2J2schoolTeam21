@@ -55,8 +55,14 @@
                 @if ( auth()->user()->level <=4 && auth()->user()->level >= 1)
                 <li class="sidebar-item {{'attendance' == request()->path() ? 'active' : ''}} ">
                     <a href="{{route('attendance.index')}}" class='sidebar-link'>
-                        <i class="fas fa-calendar"></i>
+                        <i class="fas fa-check"></i>
                         <span>Attendance</span>
+                    </a>
+                </li>
+                <li class="sidebar-item {{'scores' == request()->path() ? 'active' : ''}} ">
+                    <a href="{{route('score.index')}}" class='sidebar-link'>
+                        <i class="fas fa-star"></i>
+                        <span>Scores</span>
                     </a>
                 </li>
                 @endif

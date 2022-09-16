@@ -235,6 +235,8 @@ class UsersController extends Controller
                                 [
                                     'name' => $ClassName,
                                     'subject_id' => $isValid,
+                                    'shift' => 1,
+                                    'weekdays' => [1, 2, 3],
                                 ]
                             );
                             $user = User::updateOrCreate(
@@ -263,6 +265,8 @@ class UsersController extends Controller
                             [
                                 'name' => $ClassName,
                                 'subject_id' => $isValid,
+                                'shift' => 1,
+                                'weekdays' => [1, 2, 3],
                             ]
                         );
 

@@ -1,3 +1,4 @@
+
 <header class="mb-3">
     <nav class="navbar navbar-expand navbar-light ">
         <div class="container-fluid">
@@ -28,7 +29,9 @@
                             aria-expanded="false">
                             <i class="bi bi-bell bi-sub fs-4 text-gray-600"></i>
                             @php
-                                $notifications = auth()->user()->notification;
+                                use App\Models\Notification;
+                                $user_id = auth()->user()->id;
+                                $notifications = Notification::where('user_id', $user_id)->orderBy('created_at', 'desc')->get();
                             @endphp
                             @if (count($notifications) > 0)
                                 <span

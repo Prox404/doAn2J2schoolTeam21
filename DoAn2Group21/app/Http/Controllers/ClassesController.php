@@ -6,7 +6,9 @@ use App\Models\Attendance;
 use App\Models\Classes;
 use App\Models\ClassStudent;
 use App\Models\ClassWeekday;
+use App\Models\Notification;
 use App\Models\Schedules;
+use App\Models\Scores;
 use App\Models\Subjects;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -30,6 +32,15 @@ class ClassesController extends Controller
     public function test()
     {
         return 1;
+    }
+
+    public function findValueById($object, $id, $id_field, $field)
+    {
+        foreach ($object as $key => $value) {
+            if ($value->$id_field == $id) {
+                return $value->$field;
+            }
+        }
     }
 
     public function index()
@@ -171,7 +182,7 @@ class ClassesController extends Controller
                             'href' => route('class.edit', $object),
                             'status' => 200,
                         ];
-                    }else {
+                    } else {
                         return [
                             'status' => 202,
                         ];
@@ -183,28 +194,32 @@ class ClassesController extends Controller
                             'href' => route('class.destroy', $object),
                             'status' => 200,
                         ];
-                    }else {
+                    } else {
                         return [
                             'status' => 202,
                         ];
                     }
-                    
                 })
                 ->addColumn('accept', function ($object) {
-                    
+
                     if ($object->status == 1) {
                         return [
                             'href' => route('class.accept', $object),
                             'status' => 200,
                         ];
-                    } else if($object->status == 2){
+                    } else if ($object->status == 2) {
                         return [
                             'href' => route('class.endClass', $object),
                             'status' => 201,
                         ];
-                    }else {
+                    } else if ($object->status == 3) {
                         return [
+                            'href' => route('class.show', $object),
                             'status' => 202,
+                        ];
+                    } else {
+                        return [
+                            'status' => 203,
                         ];
                     }
                 })
@@ -221,6 +236,7 @@ class ClassesController extends Controller
                 ->where('classes.status', 2)
                 ->leftJoin('subjects', 'classes.subject_id', 'subjects.id')
                 ->get();
+
             return DataTables::of($query)
                 ->editColumn('weekdays', function ($object) {
                     if (!empty($object->weekdays)) {
@@ -411,62 +427,65 @@ class ClassesController extends Controller
         //     'id',
         //     'name',
         // ]);
+        if ($class->status == 3) {
+            redirect()->route('class.index')->with('message', 'Class is finished');
+        } else {
+            $current_subject = Subjects::query()
+                ->where('id', $class->subject_id)
+                ->get([
+                    'id',
+                    'name',
+                ]);
 
-        $current_subject = Subjects::query()
-            ->where('id', $class->subject_id)
-            ->get([
-                'id',
-                'name',
+            $teacher = ClassStudent::query()
+                ->select('users.id as id', 'users.name as name')
+                ->leftJoin('users', 'class_students.user_id', 'users.id')
+                ->where('class_id', $id)
+                ->where('users.level', 2)
+                ->first();
+
+            if (!isset($teacher)) {
+                $teacher = null;
+            }
+
+            $classWeekday = $class->weekdays;
+            $classShift = $class->shift;
+
+            $all_invalid_class = Classes::query()
+                ->addSelect('classes.*')
+                ->orWhere(function ($query) use ($classWeekday, $classShift) {
+                    foreach ($classWeekday as $weekday) {
+                        $query->orWhereJsonContains('weekdays', $weekday)
+                            ->where('shift', $classShift);
+                    }
+                })
+                ->get('id');
+
+            $teacher_not_valid = ClassStudent::query()
+                ->addSelect('class_students.*')
+                ->whereIn('class_id', $all_invalid_class)
+                ->get('user_id');
+            $teachers = User::query()
+                ->where('level', 2)
+                ->whereNotIn('id', $teacher_not_valid)
+                ->get(['id', 'name']);
+
+            $weekdays = $class->weekdays;
+
+            $numberOfStudents = ClassStudent::query()
+                ->where('class_id', $id)
+                ->count();
+
+            return view('classes.edit', [
+                'class' => $class,
+                'current_teacher' => $teacher,
+                'teachers' => $teachers,
+                // 'subject' => $subject_data,
+                'current_subject' => $current_subject[0],
+                'weekdays' => $weekdays,
+                'numberOfStudents' => $numberOfStudents,
             ]);
-
-        $teacher = ClassStudent::query()
-            ->select('users.id as id', 'users.name as name')
-            ->leftJoin('users', 'class_students.user_id', 'users.id')
-            ->where('class_id', $id)
-            ->where('users.level', 2)
-            ->first();
-
-        if (!isset($teacher)) {
-            $teacher = null;
         }
-
-        $classWeekday = $class->weekdays;
-        $classShift = $class->shift;
-
-        $all_invalid_class = Classes::query()
-            ->addSelect('classes.*')
-            ->orWhere(function ($query) use ($classWeekday, $classShift) {
-                foreach ($classWeekday as $weekday) {
-                    $query->orWhereJsonContains('weekdays', $weekday)
-                        ->where('shift', $classShift);
-                }
-            })
-            ->get('id');
-
-        $teacher_not_valid = ClassStudent::query()
-            ->addSelect('class_students.*')
-            ->whereIn('class_id', $all_invalid_class)
-            ->get('user_id');
-        $teachers = User::query()
-            ->where('level', 2)
-            ->whereNotIn('id', $teacher_not_valid)
-            ->get(['id', 'name']);
-
-        $weekdays = $class->weekdays;
-
-        $numberOfStudents = ClassStudent::query()
-            ->where('class_id', $id)
-            ->count();
-
-        return view('classes.edit', [
-            'class' => $class,
-            'current_teacher' => $teacher,
-            'teachers' => $teachers,
-            // 'subject' => $subject_data,
-            'current_subject' => $current_subject[0],
-            'weekdays' => $weekdays,
-            'numberOfStudents' => $numberOfStudents,
-        ]);
 
         // return $current_subject[0];
         // return $teacher;
@@ -599,23 +618,83 @@ class ClassesController extends Controller
 
     public function endClass($id)
     {
-        if (auth()->user()->level >= 3 && auth()->user()->level <= 4){
+        if (auth()->user()->level >= 3 && auth()->user()->level <= 4) {
             $schedules = Schedules::where('class_id', $id)->get();
             $schedule_id = [];
             foreach ($schedules as $schedule) {
                 $schedule_id[] = $schedule->id;
             }
             $attendance = Attendance::whereIn('schedule_id', $schedule_id)->distinct()->get('schedule_id')->count();
-            // return $attendance . '/' . count($schedule_id);
-            if(count($schedule_id) / $attendance < 2){
+            if (count($schedule_id) / $attendance < 2) {
                 $class = Classes::find($id);
-                $class->status = 3;
-                $class->save();
+
+                $schedules = Schedules::with('classes')->where('class_id', $class->id)->get();
+
+                $schedule_id = [];
+                foreach ($schedules as $key => $value) {
+                    $schedule_id[] = $value->id;
+                }
+
+                $attendance = Attendance::query()
+                    ->addSelect('attendances.*')
+                    ->addSelect('users.name as name')
+                    ->leftJoin('users', 'attendances.user_id', 'users.id')
+                    ->where('users.level', 1)
+                    ->whereIn('schedule_id', $schedule_id)
+                    ->get();
+
+                $students_present = [];
+                $attendances = [];
+
+                foreach ($attendance as $key => $value) {
+                    if ($value->status == 1 || $value->status == 3) {
+                        $students_present[] = $value->user_id;
+                    }
+                    $attendances[$value->schedule_id][] = $value->status;
+                }
+
+                $students_present = array_count_values($students_present);
+
+                foreach ($students_present as $key => $value) {
+                    $count = count($attendances);
+                    Scores::updateOrInsert(
+                        ['user_id' => $key, 'class_id' => $class->id],
+                        ['diligence' => $value / $count * 10]
+                    );
+                }
+
+                $scores = Scores::where('class_id', $id)->get();
+                foreach ($scores as $score) {
+                    $homework = $score['homework'];
+                    $midterm = $score['midterm'];
+                    $final = $score['final'];
+                    $quiz1 = $score['quiz1'];
+                    $quiz2 = $score['quiz2'];
+                    $diligence = $score['diligence'];
+
+                    $total = ($homework + $midterm * 1.5 + $final * 2 + $quiz1 + $quiz2 + $diligence) / 7.5;
+                    Scores::updateOrInsert(
+                        ['user_id' => $score['user_id'], 'class_id' => $class->id],
+                        ['total' => $total]
+                    );
+
+                    $date = Carbon::now()->format('Y-m-d H:i');
+
+                    Notification::create([
+                        'user_id' => $score['user_id'],
+                        'content' => $class->name . ': Class has been finished' . ' ' . $date,
+                    ]);
+
+                    $class->status = 3;
+                    $class->save();
+                }
+
+
+
                 return redirect()->route('class.index')->with('message', 'Success end class !!!');
-            }else{
+            } else {
                 return redirect()->route('class.index')->with('message', 'Can not end class, because attendance is not enough !!!');
             }
-
         }
     }
 
@@ -701,15 +780,19 @@ class ClassesController extends Controller
     public function show($id)
     {
         $classStudent = ClassStudent::query()
-            ->addSelect('users.name', 'users.id', 'users.birthday','users.level', 'users.email')
+            ->addSelect('users.name', 'users.id', 'users.birthday', 'users.level', 'users.email')
             ->where('class_id', $id)
             ->leftJoin('users', 'users.id', 'class_students.user_id');
         $class_info = Classes::where('id', $id)
             ->with('subjects')
             ->first();
-        $teacher = $classStudent->where('users.level', 1)->first();
+        $teacher = $classStudent->where('users.level', 2)->first();
         $class_info['teacher'] = $teacher->name;
-        $student = $classStudent->where('users.level', 1)->paginate(15);
+        $student = ClassStudent::query()
+            ->addSelect('users.name', 'users.id', 'users.birthday', 'users.level', 'users.email')
+            ->where('class_id', $id)
+            ->leftJoin('users', 'users.id', 'class_students.user_id')->where('users.level', 1)->paginate(15);
+        // return $class_info;
         return view('classes.show', [
             'class_info' => $class_info,
             'students' => $student,

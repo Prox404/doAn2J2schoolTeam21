@@ -14,6 +14,14 @@
             </div>
         @endif
         <section class="row">
+            @if ($class_info->status == 3)
+                <div class="col-12 d-flex justify-content-start mb-3">
+                    <a href="{{ route('score.show', $class_info->id) }}" type="button" class="btn btn-success me-1 ">
+                        <i class="fas fa-eye"></i>
+                        Xem điểm tổng kết
+                    </a>
+                </div>
+            @endif
             <div class="row">
                 <div class="col-12 col-md-12 col-lg-4">
                     <div class="card">

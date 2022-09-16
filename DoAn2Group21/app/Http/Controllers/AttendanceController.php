@@ -55,10 +55,10 @@ class AttendanceController extends Controller
                 ->distinct('class_id')
                 ->get();
 
-            $class_infor = Classes::whereIn('id', $classes)->where('status', 2)->get();
+            $class_infor = Classes::whereIn('id', $classes)->get();
 
             $schedules = Schedules::whereIn('class_id', $classes)->get();
-            $scheduleByClass = [];
+            
             $schedule_id = [];
 
             foreach ($schedules as $schedule) {
@@ -68,33 +68,39 @@ class AttendanceController extends Controller
             }
 
             $attendances = Attendance::whereIn('schedule_id', $schedule_id)->where('user_id', $id)->get();
-
+            // return $schedules;
             foreach ($attendances as $attendance) {
                 foreach ($schedules as $schedule) {
-                    if ($attendance['schedule_id'] == $schedule['id']) {
-                        switch ($attendance['status']) {
+                    if ((int)$attendance['schedule_id'] == (int)$schedule['id']) {
+                        switch ((int)$attendance['status']) {
                             case 1:
+                                // echo '1' . PHP_EOL;
                                 $schedule['status'] = 'Present';
+                                // print_r($schedule . PHP_EOL);
                                 break;
                             case 2:
+                                // echo '2' . PHP_EOL;
                                 $schedule['status'] = 'Absent';
                                 break;
                             case 3:
+                                // echo '3' . PHP_EOL;
                                 $schedule['status'] = 'OnLeave';
                                 break;
                             default:
                                 $schedule['status'] = 'Present';
                                 break;
                         }
-                    } else {
-                        $schedule['status'] = NULL;
                     }
                 }
             }
 
+            // return $schedules;
+            $scheduleByClass = [];
             foreach ($schedules as $schedule) {
                 $scheduleByClass[$schedule['name']][] = $schedule;
             }
+
+            // return $scheduleByClass;
 
             return view('attendance.index')->with('scheduleByClass', $scheduleByClass);
         }
@@ -291,18 +297,23 @@ class AttendanceController extends Controller
 
     public function attendance($class_id, $schedule_id)
     {
-        $students = ClassStudent::query()
-            ->addSelect('users.id', 'users.name', 'class_students.*')
-            ->leftJoin('users', 'class_students.user_id', 'users.id')
-            ->where('users.level', 1)
-            ->where('class_id', '=', $class_id)
-            ->get();
-        $schedules = Schedules::find($schedule_id);
+        $class = Classes::find($class_id);
+        if ($class->status == 3) {
+            return redirect()->route('attendance.history', $class_id)->with('message', 'Class has been finished');
+        } else {
+            $students = ClassStudent::query()
+                ->addSelect('users.id', 'users.name', 'class_students.*')
+                ->leftJoin('users', 'class_students.user_id', 'users.id')
+                ->where('users.level', 1)
+                ->where('class_id', '=', $class_id)
+                ->get();
+            $schedules = Schedules::find($schedule_id);
 
-        return view('attendance.attendance')
-            ->with('students', $students)
-            ->with('schedules', $schedules)
-            ->with('class_id', $class_id);
+            return view('attendance.attendance')
+                ->with('students', $students)
+                ->with('schedules', $schedules)
+                ->with('class_id', $class_id);
+        }
     }
 
     public function store(Request $request)

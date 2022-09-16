@@ -75,23 +75,28 @@ class SchedulesController extends Controller
 
     public function edit($id)
     {
-        $schedules = Schedules::query()
-            ->addSelect(
-                'schedules.*',
-                'classes.name as class_name',
-                'subjects.name as subject_name',
-                'classes.shift as shift'
-            )
-            ->where('class_id', $id)
-            ->leftJoin('classes', 'schedules.class_id', 'classes.id')
-            ->leftJoin('subjects', 'classes.subject_id', 'subjects.id')
-            ->orderBy('date', 'asc')
-            ->paginate(10);
+        $class = Classes::find($id);
+        if ($class->status == 3) {
+            return redirect()->route('schedule.index')->with('message', 'Lớp đã kết thúc, không thể chỉnh sửa lịch học');
+        } else {
+            $schedules = Schedules::query()
+                ->addSelect(
+                    'schedules.*',
+                    'classes.name as class_name',
+                    'subjects.name as subject_name',
+                    'classes.shift as shift'
+                )
+                ->where('class_id', $id)
+                ->leftJoin('classes', 'schedules.class_id', 'classes.id')
+                ->leftJoin('subjects', 'classes.subject_id', 'subjects.id')
+                ->orderBy('date', 'asc')
+                ->paginate(10);
 
-        return view('schedules.edit', [
-            'schedules' => $schedules,
-            'class_id' => $id,
-        ]);
+            return view('schedules.edit', [
+                'schedules' => $schedules,
+                'class_id' => $id,
+            ]);
+        }
 
         // return $schedules;
     }
@@ -101,9 +106,9 @@ class SchedulesController extends Controller
         if (auth()->user()->level > 2) {
             $class_id = $schedule->class_id;
             $class = Classes::find($class_id);
-            if($class->status == 3){
+            if ($class->status == 3) {
                 return redirect()->route('schedule.edit', $class_id)->with('message', 'Class has been finished');
-            }else{
+            } else {
                 if (Attendance::where('schedule_id', $schedule->id)->count() > 0) {
                     return redirect()->route('schedule.edit', $schedule->id)->with('message', 'Cannot delete, it already enable !!!');
                 } else {

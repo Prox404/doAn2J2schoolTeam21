@@ -23,7 +23,7 @@ Route::get('signout', [AuthController::class, 'signOut'])->name('signout');
 
 Route::get('users/show', [\App\Http\Controllers\UsersController::class,'show'])->name('user.show')->middleware('requiredLogin');
 Route::put('users/storeUser/{id}', [\App\Http\Controllers\UsersController::class,'storeUser'])->name('user.storeUser')->middleware('requiredLogin');
-
+Route::get('users/clearAllNotifications/{id}', [\App\Http\Controllers\UsersController::class,'clearAllNotifications'])->name('user.clearAllNotifications');
 Route::group([
     'prefix'=>'users', 
     'as' => 'user.',
@@ -38,7 +38,7 @@ Route::group([
     Route::post('advancedImport/', [\App\Http\Controllers\UsersController::class,'advancedImport'])->name('advancedImport');
     Route::post('/create', [\App\Http\Controllers\UsersController::class,'store'])->name('store');
     Route::get('get20Student/{id}', [\App\Http\Controllers\UsersController::class,'get20Student'])->name('get20Student');
-    Route::get('clearAllNotifications/{id}', [\App\Http\Controllers\UsersController::class,'clearAllNotifications'])->name('clearAllNotifications');
+    
 });
 
 Route::group([
@@ -52,6 +52,7 @@ Route::group([
     Route::put('update/{subject}', [\App\Http\Controllers\SubjectsController::class,'update'])->name('update');
     Route::delete('/destroy/{subject}', [\App\Http\Controllers\SubjectsController::class,'destroy'])->name('destroy');
     Route::post('/create', [\App\Http\Controllers\SubjectsController::class,'store'])->name('store');
+    
 });
 
 Route::group([
@@ -62,14 +63,15 @@ Route::group([
     Route::get('test', [\App\Http\Controllers\ClassesController::class,'test'])->name('test');
     Route::get('autoSchedule/{id}', [\App\Http\Controllers\ClassesController::class,'autoSchedule'])->name('autoSchedule');
     Route::put('update/{class}', [\App\Http\Controllers\ClassesController::class,'update'])->name('update');
+    Route::get('edit/{classes}', [\App\Http\Controllers\ClassesController::class,'edit'])->name('edit');
     Route::delete('/destroy/{classes}', [\App\Http\Controllers\ClassesController::class,'destroy'])->name('destroy');
     Route::get('/addTeacher/{classes}', [\App\Http\Controllers\ClassesController::class,'addTeacher'])->name('addTeacher');
     Route::put('storeTeacher', [\App\Http\Controllers\ClassesController::class,'storeTeacher'])->name('storeTeacher');
     Route::post('/create', [\App\Http\Controllers\ClassesController::class,'store'])->name('store');
     Route::get('accept/{class}', [\App\Http\Controllers\ClassesController::class,'accept'])->name('accept');
     Route::get('endClass/{class}', [\App\Http\Controllers\ClassesController::class,'endClass'])->name('endClass');
-    Route::post('getLatestName', [\App\Http\Controllers\ClassesController::class,'getLatestName'])->name('getLatestName');
-    Route::get('checkInformation/{id}', [\App\Http\Controllers\ClassesController::class,'checkInformation'])->name('checkInformation');
+    
+    
 });
 
 Route::group([
@@ -80,8 +82,9 @@ Route::group([
     Route::get('/', [\App\Http\Controllers\ClassesController::class,'index'])->name('index');
     Route::get('api', [\App\Http\Controllers\ClassesController::class,'api'])->name('api');
     Route::get('userApi/{id}', [\App\Http\Controllers\ClassesController::class,'userApi'])->name('userApi');
-    Route::get('edit/{classes}', [\App\Http\Controllers\ClassesController::class,'edit'])->name('edit');
     Route::get('show/{id}', [\App\Http\Controllers\ClassesController::class,'show'])->name('show');
+    Route::post('getLatestName', [\App\Http\Controllers\ClassesController::class,'getLatestName'])->name('getLatestName');
+    Route::get('checkInformation/{id}', [\App\Http\Controllers\ClassesController::class,'checkInformation'])->name('checkInformation');
 });
 
 
@@ -120,4 +123,17 @@ Route::group([
     Route::post('/import/{id}', [\App\Http\Controllers\ClassStudentController::class,'import'])->name('import');
     Route::post('store/{id}', [\App\Http\Controllers\ClassStudentController::class,'store'])->name('store');
     Route::delete('/destroy/{id}/{class}', [\App\Http\Controllers\ClassStudentController::class,'destroy'])->name('destroy');
+});
+
+Route::get('scores/', [\App\Http\Controllers\ScoresController::class,'index'])->name('score.index')->middleware('isAuthenticated');
+Route::get('scores/show/{id}', [\App\Http\Controllers\ScoresController::class,'show'])->name('score.show')->middleware('isAuthenticated');
+Route::get('scores/classApi', [\App\Http\Controllers\ScoresController::class,'classApi'])->name('score.classApi')->middleware('isAuthenticated');
+Route::group([
+    'prefix'=>'scores', 
+    'as' => 'score.',
+    'middleware' => 'isFromTeacherToSuperAdmin',
+], function (){
+    Route::get('/edit/{class}', [\App\Http\Controllers\ScoresController::class,'edit'])->name('edit');
+    
+    Route::put('store/{id}', [\App\Http\Controllers\ScoresController::class,'store'])->name('store');
 });

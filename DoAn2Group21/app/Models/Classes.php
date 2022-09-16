@@ -36,4 +36,9 @@ class Classes extends Model
     {
         return $this->hasMany('App\Models\ClassStudent', 'user_id');
     }
+
+    public function scores()
+    {
+        return $this->hasMany('App\Models\Scores', 'class_id');
+    }
 }

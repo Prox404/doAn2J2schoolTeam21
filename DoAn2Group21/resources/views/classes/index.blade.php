@@ -259,7 +259,7 @@
                             searchable: false,
                             render: function(data, type, row, meta) {
                                 if (data.status == 200) {
-                                    return `<a class="btn btn-success" href="${data}" >
+                                    return `<a class="btn btn-success" href="${data.href}" >
                                 <i class="fas fa-pen"></i>
                             </a>`;
                                 }
@@ -305,6 +305,11 @@
                                         </a>`;
                                 }
                                 if (data.status == 202) {
+                                    return `<a class="btn btn-info" href="${data.href}" >
+                                        <i class="fas fa-eye"></i>
+                                        </a>`;
+                                }
+                                if (data.status == 203) {
                                     return '';
                                 }
                             }

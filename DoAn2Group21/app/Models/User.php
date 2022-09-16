@@ -60,4 +60,9 @@ class User extends Authenticatable
     {
         return $this->hasMany('App\Models\Notification', 'user_id');
     }
+
+    public function scores()
+    {
+        return $this->hasMany('App\Models\Scores', 'user_id');
+    }
 }

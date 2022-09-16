@@ -5,21 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ClassStudent extends Model
+class Scores extends Model
 {
     use HasFactory;
 
-    public $timestamps = false; 
+    public $timestamps = false;
 
     protected $fillable = [
         'user_id',
         'class_id',
+        'diligence',
+        'quiz1',
+        'quiz2',
+        'homework',
+        'midterm',
+        'final',
     ];
-
-    public function attendance()
-    {
-        return $this->hasMany('App\Models\Attendance', 'user_id');
-    }
 
     public function classes()
     {
@@ -28,11 +29,6 @@ class ClassStudent extends Model
 
     public function users()
     {
-        return $this->belongsTo('App\Models\User', 'user_id');        
-    }
-
-    public function scores()
-    {
-        return $this->hasMany('App\Models\Scores', 'user_id');
+        return $this->belongsTo('App\Models\User', 'user_id');
     }
 }
